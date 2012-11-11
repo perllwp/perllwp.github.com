@@ -1,0 +1,189 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 5.2. LWP and GET Requests
+
+The way you submit form data with LWP depends on whether the form's
+action is GET or POST. If it's a GET form, you construct a URL with
+encoded form data (possibly using the C<$url-E<gt>query_form( )>
+method) and call C<$browser-E<gt>get( )>. If it's a POST form, you call
+C<$browser-E<gt>post( )> and pass a reference to an array of form
+parameters. We cover POST later in this chapter.
+
+=head2 5.2.1. GETting Fixed URLs
+
+If you know everything about the GET form ahead of time, and you know
+everything about what you'd be typing (as if you're always searching on
+the name "Dulce"), you know the URL! Because the same data from the
+same GET form always makes for the same URL, you can just hardcode
+that:
+
+ $resp = $browser->get(
+   'http://www.census.gov/cgi-bin/gazetteer?city=Dulce&state=&zip='
+ );
+
+And if there is a great big URL in which only one thing ever changes,
+you could just drop in the value, after URL-encoding it:
+
+ use URI::Escape ('uri_escape');
+ $resp = $browser->get(
+   'http://www.census.gov/cgi-bin/gazetteer?city=' . 
+   uri_escape($city) .
+   '&state=&zip='
+ );
+
+Note that you should not simply interpolate a raw unencoded value, like
+this:
+
+ $resp = $browser->get(
+   'http://www.census.gov/cgi-bin/gazetteer?city=' . 
+   $city .     # wrong!
+   '&state=&zip='
+ );
+
+The problem with doing it that way is that you have no real assurance
+that C<$city>'s value doesn't need URL encoding. You may "know" that no
+unencoded town name ever needs escaping, but it's better to escape it
+anyway.
+
+If you're piecing together the parts of URLs and you find yourself
+calling C<uri_escape> more than once per URL, then you should use the
+next method, C<query_form>, which is simpler for URLs with lots of
+variable data.
+
+=over
+
+Since this book went to press, we have a new wrinkle on URL-encoding.
+The old system I've described here (encoding character 0-255 using two
+hex digits, %xx) still works, but it provided no answer to the question
+"what if I want to use a character above 255, like E<euro>, or
+E<Theta>?". The solution is now: If the form's page is in UTF8, then
+when we go to encode the form data, encoding for characters 0-127 works
+the same; but above that, you don't encode the character number as %xx,
+but instead you UTF8-encode the character, which will produce two or
+more bytes, and then you %xx-encode those bytes.
+
+So: "Appendix F: ASCII Table" tells us that E<euro> UTF8-encodes to the
+three bytes 0xE2,0x82,0xAC. So, assuming the originating page is UTF8
+(as opposed to being in the default Latin-1, for example), we encode a
+E<euro> as "%E2%82%AC". Similarly, a E<Theta> UTF8-encodes to the two
+bytes 0xCE,0x98, so it URL-encodes as "%CE%98". And note that, under
+this system, E<eacute> encodes not as "%E9", but instead as "%C3%A9".
+
+That's the backstory. Here's how to handle it in Perl-- You can UTF8
+URL-encode things with:
+
+ use URI::Escape qw( uri_escape_utf8 );
+ $esc = uri_escape_utf8( some string value )
+
+If need to I<de>code data that was encoded this way (or that even
+I<might> have been), you can use this following subroutine:
+
+ sub smartdecode {
+   use URI::Escape qw( uri_unescape );
+   use utf8;
+   my $x = my $y = uri_unescape($_[0]);
+   return $x if utf8::decode($x);
+   return $y;
+ }
+
+and then use C<$decoded = smartdecode( I<some string value> )>
+
+=back
+
+=head2 5.2.2. GETting a query_form( ) URL
+
+The tidiest way to submit GET form data is to make a new URI object,
+then add in the form pairs using the C<query_form> method, before
+performing a C<$browser-E<gt>get($url)> request:
+
+ $url->query_form(name => value, name => value, ...);
+
+For example:
+
+ use URI;
+ my $url = URI->new( 'http://www.census.gov/cgi-bin/gazetteer' );
+ my($city,$state,$zip) = ("Some City","Some State","Some Zip");
+ $url->query_form(
+   # All form pairs:
+   'city'  => $city,
+   'state' => $state,
+   'zip'   => $zip,
+ );
+ 
+ print $url, "\n"; # so we can see it
+
+Prints:
+
+ http://www.census.gov/cgi-bin/gazetteer?city=Some+City&state=Some+State&zip=Some+Zip
+
+From this, it's easy to write a small program (shown in Example 5-1) to
+perform a request on this URL and use some simple regexps to extract
+the data from the HTML.
+
+=head2 Example 5-1. gazetteer.pl
+
+ #!/usr/bin/perl -w
+ # gazetteer.pl - query the US Cenus Gazetteer database
+ 
+ use strict;
+ use URI;
+ use LWP::UserAgent;
+ 
+ die "Usage: $0 \"That Town\"\n" unless @ARGV == 1;
+ my $name = $ARGV[0];
+ my $url = URI->new('http://www.census.gov/cgi-bin/gazetteer');
+ $url->query_form( 'city' => $name, 'state' => '', 'zip' => '');
+ print $url, "\n";
+ 
+ my $response = LWP::UserAgent->new->get( $url );
+ die "Error: ", $response->status_line unless $response->is_success;
+ extract_and_sort($response->content);
+ 
+ sub extract_and_sort {  # A simple data extractor routine
+   die "No <ul>...</ul> in content" unless $_[0] =~ m{<ul>(.*?)</ul>}s;
+   my @pop_and_town;
+   foreach my $entry (split /<li>/, $1) {
+     next unless $entry =~ m{^<strong>(.*?)</strong>(.*?)<br>}s;
+     my $town = "$1 $2";
+     next unless $entry =~ m{^Population \(.*?\): (\d+)<br>}m;
+     push @pop_and_town, sprintf "%10s %s\n", $1, $town;
+   }
+   print reverse sort @pop_and_town;
+ }
+
+Then run it from a prompt:
+
+ % perl gazetteer.pl Dulce
+ http://www.census.gov/cgi-bin/gazetteer?city=Dulce&state=&zip=
+       2438 Dulce, NM  (cdp)
+        794 Agua Dulce, TX  (city)
+        136 Guayabo Dulce Barrio, PR  (county subdivision)
+  
+ % perl gazetteer.pl IEG
+ http://www.census.gov/cgi-bin/gazetteer?city=IEG&state=&zip=
+    2498016 San Diego County, CA  (county)
+    1886748 San Diego Division, CA  (county subdivision)
+    1110549 San Diego, CA  (city)
+      67229 Boca Ciega Division, FL  (county subdivision)
+       6977 Rancho San Diego, CA  (cdp)
+       6874 San Diego Country Estates, CA  (cdp)
+       5018 San Diego Division, TX  (county subdivision)
+       4983 San Diego, TX  (city)
+       1110 Diego Herna]Ndez Barrio, PR  (county subdivision)
+        912 Riegelsville, PA  (county subdivision)
+        912 Riegelsville, PA  (borough)
+        298 New Riegel, OH  (village)
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch05_02.htm
+# 9443 bytes of input
+#Sun Nov 11 18:10:06 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "appf_01.htm"
+# Untranslatable link: "ch05_02.htm#perllwp-CHP-5-EX-1"

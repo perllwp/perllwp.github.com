@@ -1,0 +1,64 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 G.4. What Can You Do with Objects?
+
+You've seen that you can make objects and call object methods with
+them. But what are object methods for? The answer depends on the class:
+
+A Net::FTP object represents a session between your computer and an FTP
+server. So the methods you call on a Net::FTP object are for doing
+whatever you'd need to do across an FTP connection. You make the
+session and log in:
+
+ my $session = Net::FTP->new('ftp.aol.com');
+ die "Couldn't connect!" unless defined $session;
+   # The class method call to "new" will return
+   # the new object if it goes OK, otherwise it
+   # will return undef.
+  
+ $session->login('sburke', 'p@ssw3rD')
+  || die "Did I change my password again?";
+   # The object method "login" will give a true
+   # return value if actually logs in, otherwise
+   # it'll return false.
+
+You can use the session object to change directory on that session:
+
+ $session->cwd("/home/sburke/public_html")
+    || die "Hey, that was REALLY supposed to work!";
+  # if the cwd fails, it'll return false
+
+...get files from the machine at the other end of the session:
+
+ foreach my $f ('log_report_ua.txt', 'log_report_dom.txt',
+                'log_report_browsers.txt')
+ {
+   $session->get($f) || warn "Getting $f failed!"
+ };
+
+...and plenty else, ending finally with closing the connection:
+
+ $session->quit( );
+
+In short, object methods are for doing things related to (or with)
+whatever the object represents. For FTP sessions, it's about sending
+commands to the server at the other end of the connection, and that's
+about itE<mdash>there, methods are for doing something to the world
+outside the object, and the objects is just something that specifies
+what bit of the world (well, what FTP session) to act upon.
+
+With most other classes, however, the object itself stores some kind of
+information, and it typically makes no sense to do things with such an
+object without considering the data that's in the object.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file appg_04.htm
+# 2811 bytes of input
+#Sun Nov 11 18:10:04 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"

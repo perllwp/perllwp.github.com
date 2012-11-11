@@ -1,0 +1,64 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 Copyright statement for the online edition
+
+This "1.1" edition of I<Perl and LWP> is available online under the
+terms of the CreativeCommons (http://creativecommons.org/)
+B<Attribution Share-Alike License>. You may view the friendly summary
+(http://creativecommons.org/licenses/by-sa/2.0/) or the full license
+text (http://creativecommons.org/licenses/by-sa/2.0/legalcode).
+Alternatively you can send a letter to Creative Commons, 559 Nathan
+Abbott Way, Stanford, California 94305, USA and request a copy of the
+Attribution Share-Alike License.
+
+~BY~
+
+B<Attribution>. The licensor permits others to copy, distribute,
+display, and perform the work. In return, licensees must give the
+original author credit.
+
+~SHARE~
+
+B<Share Alike>. The licensor permits others to distribute derivative
+works only under a license identical to the one that governs the
+licensor's work.
+
+=head1 Copyright statement for the 2002 print edition
+
+Copyright E<copy> 2002 O'Reilly & Associates, Inc. All rights reserved.
+
+Printed in the United States of America.
+
+Published by O'Reilly & Associates, Inc., 1005 Gravenstein Highway
+North, Sebastopol, CA 95472.
+
+O'Reilly & Associates books may be purchased for educational, business,
+or sales promotional use. Online editions are also available for most
+titles (http://safari.oreilly.com (http://safari.oreilly.com)). For
+more information contact our corporate/institutional sales department:
+800-998-9938 or I<corporate@oreilly.com>
+(mailto:corporate@oreilly.com).
+
+Many of the designations used by manufacturers and sellers to
+distinguish their products are claimed as trademarks. Where those
+designations appear in this book, and O'Reilly & Associates, Inc. was
+aware of a trademark claim, the designations have been printed in caps
+or initial caps. The association between the image of blesbok and the
+the topic of Perl and LWP is a trademark of O'Reilly & Associates, Inc.
+
+While every precaution has been taken in the preparation of this book,
+the publisher and the author assume no responsibility for errors or
+omissions, or for damages resulting from the use of the information
+contained herein.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file copyrght.htm
+# 3309 bytes of input
+#Sun Nov 11 18:10:09 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"

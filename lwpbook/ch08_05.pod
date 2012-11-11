@@ -1,0 +1,151 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 8.5. Narrowing In
+
+Now, we could try excluding every kind of thing we know we don't want.
+We could exclude the C<mailto:> link by excluding all URLs that start
+with I<mailto>:; we could exclude the guest bio URLs by excluding URLs
+that contain I<guestinfo>; we could exclude the "Previous" and "Next"
+links by ignoring any URLs with I<dayFA> in them; and we could think of
+a way to exclude the image URLs. However, tomorrow the people at
+I<Fresh Air> might add this to their general template:
+
+ <a href="buynow.html"><img alt="Buy the Terry Gross mug"
+   src="/mug.jpg" width=450 weight=90></a>
+
+Because that isn't explicitly excluded, it would make its way through
+and appear as a segment link in every program listed.
+
+It is a valid approach to come up with criteria for the kinds of things
+we I<don't> want to see, but it's usually easier to come up with
+criteria to capture what we I<do> want to see. So this is what we'll
+do.
+
+We could characterize the links we're after in several ways:
+
+=over
+
+=item 1.
+
+These links all contain a C<E<lt>font...E<gt> ... E<lt>/fontE<gt>>
+sequence and a C<E<lt>bE<gt> ... E<lt>/bE<gt>> sequence.
+
+=item 2.
+
+They all have an C<E<lt>a ...E<gt>> tag with an C<href> attribute
+pointing to a URL.
+
+=item 3.
+
+The URL they point to looks like
+I<http://www.npr.org/ramfiles/fa/20010702.fa.ram>.
+
+=item 4.
+
+Notably, the URL's scheme is C<http>, it's on the server
+C<www.npr.org>, its path includes C<ramfiles>, and it ends in C<.ram>.
+
+=item 5.
+
+The (trimmed) link text up to C</a> always begins with C<Listen to> .
+
+=back
+
+Now, of these, the first criterion is most reminiscent of the sort of
+things we did earlier with the BBC news extractor. But in this case,
+it's actually sort of a bother, because we can't specify that the next
+token after the C<E<lt>a ...E<gt>> start-tag is a C<E<lt>font...E<gt>>
+tag.
+
+If, by this first criterion, we simply mean that calling
+C<$x-E<gt>get_tag('/a', 'font',> C<'b')> should give you
+C<E<lt>font...E<gt>> or C<E<lt>bE<gt>> before you hit C<E<lt>/aE<gt>>,
+well, this is true. But in either case, you'll have skipped over all
+the tokens between the current point in the stream and the next tag you
+find, and once you've skipped them, you can't get them back. In this
+case, we can get away with throwing out the content of C<E<lt>a
+...E<gt>...E<lt>/aE<gt>> sequences that don't meet this one criterion,
+but in many situations you run into, you won't have that luxury.
+Moreover, in jumping from the C<E<lt>a ...E<gt>> start-tag to the first
+C<E<lt>font...E<gt>> tag, we may be jumping over text that we want but
+will never be able to get.
+
+We could try implementing this all with the same approach we used with
+the BBC extractor in Chapter 7, "HTML Processing with Tokens", where we
+cook up several patterns (such as an C<E<lt>a> C<href...E<gt>>
+start-tag, a text token C<Listen> C<to> , a C<E<lt>font...E<gt>>
+start-tag, some whitespace, and a C<E<lt>bE<gt>> start-tag) and base
+our pattern matcher on C<get_token( )> so we can always call
+C<unget_token( )> on tokens that don't match the pattern. This is
+feasible, but it's sounding like the hardest of the criteria to
+formalize, at least under HTML::TokeParser. (But testing whether a tag
+sequence contains another is easy with HTML::TreeBuilder, as we see in
+later chapters.) So we'll try to make do without this one criterion and
+consider it a last resort.
+
+Winding irrevocably past things is a problem not just with C<get_tag(
+)>. It's also a problem with C<get_text( )> and C<get_trimmed_text( )>.
+Once you use any of these methods to skip past tags and/or comments,
+they're gone for good. Unless you did something particularly perverse,
+such as read a huge chunk of the stream with C<get_token( )> and then
+stuffed it back in with C<unget_token( )> while still keeping a copy
+around. If you're even contemplating something like that, it's a
+definite sign that your program is outgrowing what you can do with
+HTML::TokeParser, and you should either write a new searcher method
+that's like C<get_text( )> but that can restore tokens to the buffer,
+or more likely move on to a parsing model based on HTML::TreeBuilder.
+
+The next criteria (numbers 3 and 4 in the list above) are easy to
+formalize. These involve characteristics of the URL. We simply add a
+line to our C<while> loop, like so:
+
+ while(my $a_tag = $stream->get_tag('a')) {
+   my $url = $a_tag->[1]{'href'} || next;
+   next unless $url =~ m{^http:}s and $url =~ m/www\.npr\.org/i
+    and $url =~ m{/ramfiles/} and $url =~ m/\.ram$/;
+   #  (There's many other ways of doing the above.)
+   my $text = $stream->get_trimmed_text('/a');
+   printf "%s\n  %s\n", $text, $url;
+ }
+
+But this raises a point on which many programmers will, legitimately,
+diverge. Currently, we can say "it's interesting only if the URL ends
+in I<.ram>," like so:
+
+ next unless $url =~ m/\.ram$/;
+
+It works! But what if, tomorrow, some code like the following is added
+to the normal template?
+
+ <a href="/stuff/holiday_greets.ram">Happy Holidays
+  from Terry Gross!</a>
+ <!-- just a short RA file of Terry saying "Happy NATO Day!" -->
+
+We'll be annoyed we didn't make our link extractor check C<$url> C<=~>
+C<m/www\.npr\.org/i> and C<$url> C<=~> C<m{/ramfiles/}>. On the other
+hand, if we do check those additional facts about the URL, and tomorrow
+all the I<.ram> files are moved off of I<www.npr.org> and onto
+I<archive.npr.org>, or onto I<terrygross.com> or whatever, then it'll
+look like there were no links for this program! Then we'll be annoyed
+that we did make our link extractor check those additional things about
+the URL. Moreover, tomorrow NPR could switch to a better audio format
+than RealAudio, and all the I<.ram> files could turn into something
+else, such that even C<m/\.ram$/> is no longer true. It could even be
+something served across a protocol other than HTTP! In other words, no
+part of the URL is reliably stable. On one hand, National Public Radio
+is not normally characterized by lavish budgets for web design (and
+redesign, and re-redesign), so you can expect some measure of
+stability. But on the other hand, you never know!
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch08_05.htm
+# 8556 bytes of input
+#Sun Nov 11 18:10:08 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch07_01.htm"

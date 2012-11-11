@@ -1,0 +1,280 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 7.2. Basic HTML::TokeParser Use
+
+The HTML::TokeParser module is a class for accessing HTML as tokens. An
+HTML::TokeParser object gives you one token at a time, much as a
+filehandle gives you one line at a time from a file. The HTML can be
+tokenized from a file or string. The tokenizer decodes entities in
+attributes, but not entities in text.
+
+Create a token stream object using one of these two constructors:
+
+ my $stream = HTML::TokeParser->new($filename)
+   || die "Couldn't read HTML file $filename: $!";
+
+or:
+
+ my $stream = HTML::TokeParser->new( \$string_of_html );
+
+Once you have that stream object, you get the next token by calling:
+
+ my $token = $stream->get_token( );
+
+The C<$token> variable then holds an array reference, or C<undef> if
+there's nothing left in the stream's file or string. This code
+processes every token in a document:
+
+ my $stream = HTML::TokeParser->new($filename)
+   || die "Couldn't read HTML file $filename: $!";
+ 
+ while(my $token = $stream->get_token) {
+   # ... consider $token ...
+ }
+
+The C<$token> can have one of six kinds of values, distinguished first
+by the value of C<$token-E<gt>[0]>, as shown in Table 7-1.
+
+=head2 Table 7-1. Token types
+
+Token
+
+Values
+
+Start-tag
+
+C<["S", $tag, $attribute_hashref, $attribute_order_arrayref, $source]>
+
+End-tag
+
+C<["E", $tag, $source]>
+
+Text
+
+C<["T", $text, $should_not_decode]>
+
+Comment
+
+C<["C", $source]>
+
+Declaration
+
+C<["D", $source]>
+
+Processing instruction
+
+C<["PI", $content, $source]>
+
+=head2 7.2.1. Start-Tag Tokens
+
+If C<$token-E<gt>[0]> is C<"S">, the token represents a start-tag:
+
+ ["S",  $tag, $attribute_hash, $attribute_order_arrayref, $source]
+
+The components of this token are:
+
+=over
+
+=item C<$tag>
+
+The tag name, in lowercase.
+
+=item C<$attribute_hashref>
+
+A reference to a hash encoding the attributes of this tag. The
+(lowercase) attribute names are the keys of the hash.
+
+=item C<$attribute_order_arrayref>
+
+A reference to an array of (lowercase) attribute names, in case you
+need to access elements in order.
+
+=item C<$source>
+
+The original HTML for this token.
+
+=back
+
+The first three values are the most interesting ones, for most
+purposes.
+
+For example, parsing this HTML:
+
+ <IMG SRC="kirk.jpg" alt="Shatner in r&ocirc;le of Kirk" WIDTH=352 height=522>
+
+gives this token:
+
+ [
+   'S',
+   'img',
+   { 'alt' => 'Shatner in rôle of Kirk',
+      'height' => '522', 'src' => 'kirk.jpg', 'width' => '352'
+   },
+   [ 'src', 'alt', 'width', 'height' ],
+   '<IMG SRC="kirk.jpg" alt="Shatner in r&ocirc;le of Kirk" WIDTH=352 height=522>'
+ ]
+
+Notice that the tag and attribute names have been lowercased, and the
+C<&ocirc;> entity decoded within the C<alt> attribute.
+
+=head2 7.2.2. End-Tag Tokens
+
+When C<$token-E<gt>[0]> is C<"E">, the token represents an end-tag:
+
+ [ "E", $tag, $source ]
+
+The components of this tag are:
+
+=over
+
+=item C<$tag>
+
+The lowercase name of the tag being closed.
+
+=item C<$source>
+
+The original HTML for this token.
+
+=back
+
+Parsing this HTML:
+
+ </A>
+
+gives this token:
+
+ [ 'E', 'a', '</A>' ]
+
+=head2 7.2.3. Text Tokens
+
+When C<$token-E<gt>[0]> is C<"T">, the token represents text:
+
+ ["T", $text, $should_not_decode]
+
+The elements of this array are:
+
+=over
+
+=item C<$text>
+
+The text, which may have entities.
+
+=item C<$should_not_decode>
+
+A Boolean value true indicating that you should not decode the entities
+in C<$text>.
+
+=back
+
+Tokenizing this HTML:
+
+ &amp; the
+
+gives this token:
+
+ [ 'T',
+   ' &amp; the',
+   ''
+ ]
+
+The empty string is a false value, indicating that there's nothing
+stopping us from decoding C<$text> with C<decode_entities( )> from
+HTML::Entities:
+
+ decode_entities($token->[1]) if $token->[2];
+
+Text inside C<E<lt>scriptE<gt>>, C<E<lt>styleE<gt>>, C<E<lt>xmpE<gt>>,
+C<E<lt>listingE<gt>>, and C<E<lt>plaintextE<gt>> tags is not supposed
+to be entity-decoded. It is for such text that C<$should_not_decode> is
+true.
+
+=head2 7.2.4. Comment Tokens
+
+When C<$token-E<gt>[0]> is C<"C">, you have a comment token:
+
+ ["C", $source]
+
+The C<$source> component of the token holds the original HTML of the
+comment. Most programs that process HTML simply ignore comments.
+
+Parsing this HTML
+
+ <!-- Shatner's best known r&ocirc;le -->
+
+gives us this C<$token> value:
+
+ [ 'C', #0: we're a comment
+   '<!-- Shatner's best known r&ocirc;le -->'  #1: source
+ ]
+
+=head2 7.2.5. Markup Declaration Tokens
+
+When C<$token-E<gt>[0]> is C<"D">, you have a declaration token:
+
+ ["D", $source]
+
+The C<$source> element of the array is the HTML of the declaration.
+Declarations rarely occur in HTML, and when they do, they are rarely of
+any interest. Almost all programs that process HTML ignore
+declarations.
+
+This HTML:
+
+ <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+gives this token:
+
+ [ 'D',
+   '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">'
+ ]
+
+=head2 7.2.6. Processing Instruction Tokens
+
+When C<$token-E<gt>[0]> is C<"PI">, the token represents a processing
+instruction:
+
+ [ "PI", $instruction, $source ]
+
+The components are:
+
+=over
+
+=item C<$instruction>
+
+The processing instruction stripped of initial C<E<lt>?> and trailing
+C<E<gt>>.
+
+=item C<$source>
+
+The original HTML for the processing instruction.
+
+=back
+
+A processing instruction is an SGML construct rarely used in HTML. Most
+programs extracting information from HTML ignore processing
+instructions. If you do handle processing instructions, be warned that
+in SGML (and thus HTML) a processing instruction ends with a
+greater-than (C<E<gt>>), but in XML (and thus XHTML), a processing
+instruction ends with a question mark and a greater-than sign
+(C<?E<gt>>).
+
+Tokenizing:
+
+ <?subliminal message>
+
+gives:
+
+ [ 'PI', 'subliminal message', '<?subliminal message>' ]
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch07_02.htm
+# 10170 bytes of input
+#Sun Nov 11 18:10:07 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch07_02.htm#perllwp-CHP-7-TABLE-1"

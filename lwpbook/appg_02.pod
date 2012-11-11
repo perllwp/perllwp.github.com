@@ -1,0 +1,78 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 G.2. Modules and Their Functional Interfaces
+
+Modules are the main way that Perl provides for bundling up code for
+later use by yourself or others. As I'm sure you can't help noticing
+from reading I<The Perl Journal>, CPAN (the Comprehensive Perl Archive
+Network) is the repository for modules (or groups of modules) that
+others have written, to do anything from composing music to accessing
+web pages. A good deal of those modules even come with every
+installation of Perl.
+
+One module that you may have used before, and which is fairly typical
+in its interface, is Text::Wrap. It comes with Perl, so you don't even
+need to install it from CPAN. You use it in a program of yours, by
+having your program code say early on:
+
+ use Text::Wrap;
+
+and after that, you can access a function called C<wrap>, which inserts
+line-breaks in text that you feed it, so that the text will be wrapped
+to 72 (or however many) columns.
+
+The way this C<use Text::Wrap> business works is that the module
+Text::Wrap exists as a file I<Text/Wrap.pm> somewhere in one of your
+library directories. That file contains Perl codeL<[6]|/FOOTNOTE-6>
+which, among other things, defines a function called
+C<Text::Wrap::wrap>, and then exports that function, which means that
+when you say C<wrap> after having said C<use> C<Text::Wrap>, you'll be
+actually calling the C<Text::Wrap::wrap> function. Some modules don't
+export their functions, so you have to call them by their full name,
+like C<Text::Wrap::wrap(>I<C<parameters>>C<)>.
+
+=over
+
+[6] And mixed in with the Perl code, there's documentation, which is
+what you read with C<perldoc Text::Wrap>. The I<perldoc> program simply
+ignores the code and formats the documentation text, whereas C<use
+Text::Wrap> loads and runs the code while ignoring the documentation.
+
+=back
+
+Regardless of whether the typical module exports the functions it
+provides, a module is basically just a container for chunks of code
+that do useful things. The way the module allows for you to interact
+with it, is its interface. And when, like with Text::Wrap, its
+interface consists of functions, the module is said to have a
+I<functional interface>.L<[7]|/FOOTNOTE-7>
+
+=over
+
+[7] The term "function" (and therefore "functionI<al>") has various
+senses. I'm using the term here in its broadest sense, to refer to
+routinesE<mdash>bits of code that are called by some name and take
+parameters and return some value.
+
+=back
+
+Using modules with functional interfaces is
+straightforwardE<mdash>instead of defining your own "wrap" function
+with C<sub wrap { ... }>, you entrust C<use Text::Wrap> to do that for
+you, along with whatever other functions its defines and exports,
+according to the module's documentation. Without too much bother, you
+can even write your own modules to contain your frequently used
+functions; I suggest having a look at the I<perlmod> manpage for more
+leads on doing this.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file appg_02.htm
+# 4335 bytes of input
+#Sun Nov 11 18:10:04 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"

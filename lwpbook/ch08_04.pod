@@ -1,0 +1,66 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 8.4. First Code
+
+Because we want links, let's get links, like this:
+
+ use strict;
+ use HTML::TokeParser;
+ parse_fresh_stream(
+   HTML::TokeParser->new('fresh1.html') || die $!
+ );
+ 
+ sub parse_fresh_stream {
+   my($stream) = @_;
+   while(my $a_tag = $stream->get_tag('a')) {
+     my $text = $stream->get_trimmed_text('/a');
+     printf "%s\n  %s\n", $text, $a_tag->[1]{'href'} || '??';
+   }
+   return;
+ }
+
+But this outputs:
+
+ Fresh Air Online
+   index.cfm
+ Listen to Current Show
+   http://www.npr.org/ramfiles/fa/20011011.fa.ram
+ [...]
+ NPR Online
+   http://www.npr.org
+ FreshAir@whyy.org
+   mailto:freshair@whyy.org
+ Listen to Monday - July 2, 2001
+   http://www.npr.org/ramfiles/fa/20010702.fa.ram
+ Listen to Editor and writer Walter Kirn
+   http://www.npr.org/ramfiles/fa/20010702.fa.01.ram
+ Walter Kirn
+   http://freshair.npr.org/guestInfoFA.cfm?name=walterkirn
+ Listen to Casting director and actress Joanna Merlin
+   http://www.npr.org/ramfiles/fa/20010702.fa.02.ram
+ Joanna Merlin
+   http://freshair.npr.org/guestInfoFA.cfm?name=joannamerlin
+ Previous show
+   dayFA.cfm?todayDate=06%2F29%2F2001
+ Next show
+   dayFA.cfm?todayDate=07%2F03%2F2001
+
+We got what we wanted (those three "Listen to" links are in there), but
+it's buried in other stuff. You see, the navigation bar on the left
+does consist of image links, whose C<ALT> content shows up when we call
+C<get_trimmed_text( )> or C<get_text( )>. We also get the C<mailto:>
+link from the bottom of the navigation bar, the bio links for the
+guests from the paragraphs describing each segment, and the "Previous
+Show" and "Next Show" links.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch08_04.htm
+# 2443 bytes of input
+#Sun Nov 11 18:10:08 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"

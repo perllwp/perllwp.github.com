@@ -1,0 +1,197 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 2.2. An HTTP Transaction
+
+The Hypertext Transfer Protocol (HTTP) is used to fetch most documents
+on the Web. It is formally specified in RFC 2616, but this section
+explains everything you need to know to use LWP.
+
+HTTP is a server/client protocol: the server has the file, and the
+client wants it. In regular web surfing, the client is a web browser
+such as Mozilla or Internet Explorer. The URL for a document identifies
+the server, which the browser contacts and requests the document from.
+The server returns either in error ("file not found") or success (in
+which case the document is attached).
+
+Example 2-1 contains a sample request from a client.
+
+=head2 Example 2-1. An HTTP request
+
+ GET /daily/2001/01/05/1.html HTTP/1.1
+ Host: www.suck.com
+ User-Agent: Super Duper Browser 14.6
+ [blank line]
+
+A successful response is given in Example 2-2.
+
+=head2 Example 2-2. A successful HTTP response
+
+ HTTP/1.1 200 OK
+ Content-type: text/html
+ Content-length: 24204
+ [blank line]
+ [and then 24,204 bytes of HTML code]
+
+A response indicating failure is given in Example 2-3.
+
+=head2 Example 2-3. An unsuccessful HTTP response
+
+ HTTP/1.1 404 Not Found
+ Content-type: text/html
+ Content-length: 135
+   
+ <html><head><title>Not Found</title></head><body>
+ Sorry, the object you requested was not found.
+ </body><html>
+ [and then the server closes the connection]
+
+=head2 2.2.1. Request
+
+An HTTP request has three parts: the request line, the headers, and the
+body of the request (normally used to pass form parameters).
+
+The request line says what the client wants to do (the I<method>), what
+it wants to do it to (the I<path>), and what protocol it's speaking.
+Although the HTTP standard defines several methods, the most common are
+GET and POST. The path is part of the URL being requested (in Example
+2-1 the path is I</daily/2001/01/05/1.html>). The protocol version is
+generally C<HTTP/1.1>.
+
+Each header line consists of a key and a value (for example,
+C<User-Agent:> C<SuperDuperBrowser/14.6>). In versions of HTTP previous
+to 1.1, header lines were optional. In HTTP 1.1, the C<Host>: header
+must be present, to name the server to which the browser is talking.
+This is the "server" part of the URL being requested (e.g.,
+I<www.suck.com>). The headers are terminated with a blank line, which
+must be present regardless of whether there are any headers.
+
+The optional message body can contain arbitrary data. If a body is
+sent, the request's C<Content-Type> and C<Content-Length> headers help
+the server decode the data. GET queries don't have any attached data,
+so this area is blank (that is, nothing is sent by the browser). For
+our purposes, only POST queries use this third part of the HTTP
+request.
+
+The following are the most useful headers sent in an HTTP request.
+
+=over
+
+=item C<Host>: C<I<www.youthere.int>>
+
+This mandatory header line tells the server the hostname from the URL
+being requested. It may sound odd to be telling a server its own name,
+but this header line was added in HTTP 1.1 to deal with cases where a
+single HTTP server answers requests for several different hostnames.
+
+=item C<User-Agent>: C<I<Thing/1.23 details...>>
+
+This optional header line identifies the make and model of this browser
+(virtual or otherwise). For an interactive browser, it's usually
+something like C<Mozilla/4.76> C<[en]> C<(Win98;> C<U)> or
+C<Mozilla/4.0> C<(compatible;> C<MSIE> C<5.12;> C<Mac_PowerPC)>. By
+default, LWP sends a C<User-Agent> header of C<libwww-perl/5.64> (or
+whatever your exact LWP version is).
+
+=item C<Referer>: C<I<http://www.thingamabob.int/stuff.html>>
+
+This optional header line tells the remote server the URL of the page
+that contained a link to the page being requested.
+
+=over
+
+"Referrer" would be a more correct English spelling of the word, but
+"Referer" got frozen into the spec years ago. Maybe the blame lies on a
+UK (or Irish, Indian, etc) person mistakenly assuming that "referer"
+would be a correct US spelling, the way that UK "traveller" does become
+"traveler" in the US. Admittedly, it I<is> a confusing
+(http://amazon.com/dp/0801879566) enough issue
+(http://www.dwcummings.com/aes/).
+
+=back
+
+=item C<Accept-Language>: C<I<en-US, en, es, de>>
+
+This optional header line tells the remote server the natural languages
+in which the user would prefer to see content, using language tags. For
+example, the above list means the user would prefer content in U.S.
+English, or (in order of decreasing preference) any kind of English,
+Spanish, or German. (Appendix D, "Language Tags" lists the most common
+language tags.) Many browsers do not send this header, and those that
+do usually send the default header appropriate to the version of the
+browser that the user installed. For example, if the browser is
+Netscape with a Spanish-language interface, it would probably send
+C<Accept-Language:> C<es>, unless the user has dutifully gone through
+the browser's preferences menus to specify other languages.
+
+=back
+
+=over
+
+"www.youthere.int"? Yes, there's an ".int" TLD. It's for international
+treaty organizations (like the World Health Organization
+(http://who.int) or NATO (http://www.nato.int/)), which means that it
+will likely be permanently free of clever (or even non-acronymic)
+domain names. So I use it extensively as my suffix for nonsense
+hostnames throughout this book.
+
+But little did I know when I wrote the book, that RFC 2606
+(http://tools.ietf.org/html/rfc2606) had already reserved
+C<example.com/.net/.org> for just the purpose of having an example
+domain name for use in, well, books about the Web, and other such
+documentation.
+
+=back
+
+=head2 2.2.2. Response
+
+The server's response also has three parts: the status line, some
+headers, and an optional body.
+
+The status line states which protocol the server is speaking, then
+gives a numeric status code and a short message. For example, "HTTP/1.1
+404 Not Found." The numeric status codes are groupedE<mdash>200-299 are
+success, 400-499 are permanent failures, and so on. A full list of HTTP
+status codes is given in Appendix B, "HTTP Status Codes".
+
+The header lines let the server send additional information about the
+response. For example, if authentication is required, the server uses
+headers to indicate the type of authentication. The most common
+headerE<mdash>almost always present for both successful and
+unsuccessful requestsE<mdash>is C<Content-Type>, which helps the
+browser interpret the body. Headers are terminated with a blank line,
+which must be present even if no headers are sent.
+
+Many responses contain a C<Content-Length> line that specifies the
+length, in bytes, of the body. However, this line is rarely present on
+dynamically generated pages, and because you never know which pages are
+dynamically generated, you can't rely on that header line being there.
+
+(Other, rarer header lines are used for specifying that the content has
+moved to a given URL, or that the server wants the browser to send HTTP
+cookies, and so on; however, these things are generally handled for you
+automatically by LWP.)
+
+The body of the response follows the blank line and can be any
+arbitrary data. In the case of a typical web request, this is the HTML
+document to be displayed. If an error occurs, the message body doesn't
+contain the document that was requested but usually consists of a
+server-generated error message (generally in HTML, but sometimes not)
+explaining the error.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch02_02.htm
+# 10396 bytes of input
+#Sun Nov 11 18:10:05 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch02_02.htm#perllwp-CHP-2-EX-1"
+# Untranslatable link: "ch02_02.htm#perllwp-CHP-2-EX-2"
+# Untranslatable link: "ch02_02.htm#perllwp-CHP-2-EX-3"
+# Untranslatable link: "ch02_02.htm#perllwp-CHP-2-EX-1"
+# Untranslatable link: "appd_01.htm"
+# Untranslatable link: "appb_01.htm"

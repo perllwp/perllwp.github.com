@@ -1,0 +1,90 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 Preface
+
+=head2 Contents:
+
+L<Preface|/perllwp-PREF-SECT-0>
+
+L<Audience for This Book|/perllwp-PREF-SECT-1>
+
+Structure of This Book
+
+Order of Chapters
+
+Important Standards Documents
+
+Conventions Used in This Book
+
+Comments & Questions
+
+Acknowledgments
+
+Perl (http://interglacial.com/~sburke/pub/perl.html) soared to
+popularity as a language for creating and managing
+(http://www.oreilly.com/catalog/perlwsmng/) web content. Perl is
+equally adept at consuming information on the Web. Most web sites are
+created for people, but quite often you want to automate tasks that
+involve accessing a web site in a repetitive way. Such tasks could be
+as simple as saying "here's a list of URLs; I want to be emailed if any
+of them stop working," or they could involve more complex processing of
+any number of pages. This book is about using LWP (the Library for
+World Wide Web in Perl) and Perl to fetch and process web pages.
+
+For example, if you want to compare the prices of all O'Reilly books on
+Amazon.com and bn.com, you could look at each page yourself and keep
+track of the prices. Or you could write an LWP program to fetch the
+product pages, extract the prices, and generate a report. O'Reilly has
+a lot of books in print, and after reading this one, you'll be able to
+write and run the program much more quickly than you could visit every
+catalog page.
+
+Consider also a situation in which a particular page has links to
+several dozen files (images, music, and so on) that you want to
+download. You could download each individually, by monotonously
+selecting each link in your browser and choosing Save as..., or you
+could dash off a short LWP program that scans for URLs in that page and
+downloads each, unattended.
+
+Besides extracting data from web pages, you can also automate
+submitting data through web forms. Whether this is a matter of
+uploading 50 image files through your company's intranet interface, or
+searching the local library's online card catalog every week for any
+new books with "Navajo" in the title, it's worth the time and piece of
+mind to automate repetitive processes by writing LWP programs to submit
+data into forms and scan the resulting data.
+
+=head2 0.1. Audience for This Book
+
+This book is aimed at someone who already knows Perl and HTML, but I
+don't assume you're an expert at either. I give quick refreshers on
+some of the quirkier aspects of HTML (e.g., forms), but in general, I
+assume you know what each of the HTML tags means. If you know basic
+regular expressions and are familiar with references and maybe even
+objects, you have all the Perl skills you need to use this book.
+
+If you're new to Perl, consider reading I<Learning Perl> (O'Reilly) and
+maybe also I<The Perl Cookbook> (O'Reilly). If your HTML is shaky, try
+the I<HTML Pocket Reference> or I<HTML: The Definitive Guide>
+(O'Reilly). If you don't feel comfortable using objects in Perl,
+reading Appendix G, "User's View of Object-Oriented Modules" in this
+book should be enough to bring you up to speed.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch00_01.htm
+# 4286 bytes of input
+#Sun Nov 11 18:10:04 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch00_02.htm"
+# Untranslatable link: "ch00_03.htm"
+# Untranslatable link: "ch00_04.htm"
+# Untranslatable link: "ch00_05.htm"
+# Untranslatable link: "ch00_06.htm"
+# Untranslatable link: "ch00_07.htm"
+# Untranslatable link: "appg_01.htm"

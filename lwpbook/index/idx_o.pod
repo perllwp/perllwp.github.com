@@ -1,0 +1,115 @@
+=pod
+
+^ Perl and LWP ^
+
+Symbols & Numbers | A | B | C | D | E | F | G | H | I | J | K | L | M |
+N | O | P | Q | R | S | T | U | V | W | X | Y | Z
+
+=head1 Index: O
+
+=over
+
+=item object-oriented interface: 1.5.1. The Object-Oriented Interface
+
+=item objects
+
+=over
+
+=item connection cache object: 3.4.1. Connection Parameters
+
+=item HTTP::Response: 3.5. HTTP::Response Objects
+
+=item URI: 4.1. Parsing URLs
+
+=back
+
+=item Ogg Vorbis file, spider and: 12.3.1. The Basic Spider Logic
+
+=item E<lt>/optionE<gt> HTML tag: 5.4.11. Select Elements and Option
+Elements
+
+=item option element, HTML forms: 5.4.11. Select Elements and Option
+Elements
+
+=item ora-temps code, web site link extraction: 6.7. Example:
+Extracting Temperatures from Weather Underground
+
+=item output, URI objects as strings: 4.1.2. Output
+
+=back
+
+Symbols & Numbers | A | B | C | D | E | F | G | H | I | J | K | L | M |
+N | O | P | Q | R | S | T | U | V | W | X | Y | Z
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file idx_o.htm
+# 4047 bytes of input
+#Sun Nov 11 18:19:48 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "../index.html"
+# Untranslatable link: "idx_0.htm"
+# Untranslatable link: "idx_a.htm"
+# Untranslatable link: "idx_b.htm"
+# Untranslatable link: "idx_c.htm"
+# Untranslatable link: "idx_d.htm"
+# Untranslatable link: "idx_e.htm"
+# Untranslatable link: "idx_f.htm"
+# Untranslatable link: "idx_g.htm"
+# Untranslatable link: "idx_h.htm"
+# Untranslatable link: "idx_i.htm"
+# Untranslatable link: "idx_j.htm"
+# Untranslatable link: "idx_k.htm"
+# Untranslatable link: "idx_l.htm"
+# Untranslatable link: "idx_m.htm"
+# Untranslatable link: "idx_n.htm"
+# Untranslatable link: "idx_o.htm"
+# Untranslatable link: "idx_p.htm"
+# Untranslatable link: "idx_q.htm"
+# Untranslatable link: "idx_r.htm"
+# Untranslatable link: "idx_s.htm"
+# Untranslatable link: "idx_t.htm"
+# Untranslatable link: "idx_u.htm"
+# Untranslatable link: "idx_v.htm"
+# Untranslatable link: "idx_w.htm"
+# Untranslatable link: "idx_x.htm"
+# Untranslatable link: "idx_y.htm"
+# Untranslatable link: "idx_z.htm"
+# Untranslatable link: "../ch01_05.htm#INDEX-44"
+# Untranslatable link: "../ch03_04.htm#INDEX-128"
+# Untranslatable link: "../ch03_05.htm#INDEX-163"
+# Untranslatable link: "../ch04_01.htm#INDEX-183"
+# Untranslatable link: "../ch12_03.htm#INDEX-673"
+# Untranslatable link: "../ch05_04.htm#INDEX-336"
+# Untranslatable link: "../ch05_04.htm#INDEX-332"
+# Untranslatable link: "../ch06_07.htm#INDEX-400"
+# Untranslatable link: "../ch04_01.htm#INDEX-208"
+# Untranslatable link: "idx_0.htm"
+# Untranslatable link: "idx_a.htm"
+# Untranslatable link: "idx_b.htm"
+# Untranslatable link: "idx_c.htm"
+# Untranslatable link: "idx_d.htm"
+# Untranslatable link: "idx_e.htm"
+# Untranslatable link: "idx_f.htm"
+# Untranslatable link: "idx_g.htm"
+# Untranslatable link: "idx_h.htm"
+# Untranslatable link: "idx_i.htm"
+# Untranslatable link: "idx_j.htm"
+# Untranslatable link: "idx_k.htm"
+# Untranslatable link: "idx_l.htm"
+# Untranslatable link: "idx_m.htm"
+# Untranslatable link: "idx_n.htm"
+# Untranslatable link: "idx_o.htm"
+# Untranslatable link: "idx_p.htm"
+# Untranslatable link: "idx_q.htm"
+# Untranslatable link: "idx_r.htm"
+# Untranslatable link: "idx_s.htm"
+# Untranslatable link: "idx_t.htm"
+# Untranslatable link: "idx_u.htm"
+# Untranslatable link: "idx_v.htm"
+# Untranslatable link: "idx_w.htm"
+# Untranslatable link: "idx_x.htm"
+# Untranslatable link: "idx_y.htm"
+# Untranslatable link: "idx_z.htm"

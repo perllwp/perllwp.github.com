@@ -1,0 +1,389 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 Chapter 4. URLs
+
+=head2 Contents:
+
+Parsing URLs
+
+Relative URLs
+
+Converting Absolute URLs to Relative
+
+Converting Relative URLs to Absolute
+
+Now that you've seen how LWP models HTTP requests and responses, let's
+study the facilities it provides for working with URLs. A URL tells you
+how to get to something: "use HTTP with this host and request this,"
+"connect via FTP to this host and retrieve this file," or "send email
+to this address."
+
+The great variety inherent in URLs is both a blessing and a curse. On
+one hand, you can stretch the URL syntax to address almost any type of
+network resource. However, this very flexibility means attempts to
+parse arbitrary URLs with regular expressions rapidly run into a
+quagmire of special cases.
+
+The LWP suite of modules provides the URI class to manage URLs. This
+chapter describes how to create objects that represent URLs, extract
+information from those objects, and convert between absolute and
+relative URLs. This last task is particularly useful for link checkers
+and spiders, which take partial URLs from HTML links and turn those
+into absolute URLs to request.
+
+=head2 4.1. Parsing URLs
+
+Rather than attempt to pull apart URLs with regular expressions, which
+is difficult to do in a way that works with all the many types of URLs,
+you should use the URI class. When you create an object representing a
+URL, it has attributes for each part of a URL (scheme, username,
+hostname, port, etc.). Make method calls to get and set these
+attributes.
+
+Example 4-1 creates a URI object representing a complex URL, then calls
+methods to discover the various components of the URL.
+
+=head2 Example 4-1. Decomposing a URL
+
+ use URI;
+ my $url = URI->new('http://user:pass@example.int:4345/hello.php?user=12');
+ print "Scheme: ", $url->scheme( ), "\n";
+ print "Userinfo: ", $url->userinfo( ), "\n";
+ print "Hostname: ", $url->host( ), "\n";
+ print "Port: ", $url->port( ), "\n";
+ print "Path: ", $url->path( ), "\n";
+ print "Query: ", $url->query( ), "\n";
+
+Example 4-1 prints:
+
+ Scheme: http
+ Userinfo: user:pass
+ Hostname: example.int
+ Port: 4345
+ Path: /hello.php
+ Query: user=12
+
+Besides reading the parts of a URL, methods such as C<host( )> can also
+alter the parts of a URL, using the familiar convention that
+C<$object-E<gt>method> reads an attribute's value and
+C<$object-E<gt>method(>I<C<newvalue>>C<)> alters an attribute:
+
+ use URI;
+ my $uri = URI->new("http://www.perl.com/I/like/pie.html");
+ $uri->host('testing.perl.com');
+ print $uri,"\n";
+ http://testing.perl.com/I/like/pie.html
+
+Now let's look at the methods in more depth.
+
+=head2 4.1.1. Constructors
+
+An object of the URI class represents a URL. (Actually, a URI object
+can also represent a kind of URL-like string called a URN, but you're
+unlikely to run into one of those any time soon.) To create a URI
+object from a string containing a URL, use the C<new( )> constructor:
+
+ $url = URI->new(url [, scheme ]);
+
+If I<C<url>> is a relative URL (a fragment such as
+C<staff/alicia.html>), I<C<scheme>> determines the scheme you plan for
+this URL to have (C<http>, C<ftp>, etc.). But in most cases, you call
+C<URI-E<gt>new> only when you know you won't have a relative URL; for
+relative URLs or URLs that just I<might> be relative, use the
+C<URI-E<gt>new_abs> method, discussed below.
+
+The URI module strips out quotes, angle brackets, and whitespace from
+the new URL. So these statements all create identical URI objects:
+
+ $url = URI->new('<http://www.oreilly.com/>');
+ $url = URI->new('"http://www.oreilly.com/"');
+ $url = URI->new('          http://www.oreilly.com/');
+ $url = URI->new('http://www.oreilly.com/   ');
+
+The URI class automatically escapes any characters that the URL
+standard (RFC 2396) says can't appear in a URL. So these two are
+equivalent:
+
+ $url = URI->new('http://www.oreilly.com/bad page');
+ $url = URI->new('http://www.oreilly.com/bad%20page');
+
+If you already have a URI object, the C<clone( )> method will produce
+another URI object with identical attributes:
+
+ $copy = $url->clone( );
+
+Example 4-2 clones a URI object and changes an attribute.
+
+=head2 Example 4-2. Cloning a URI
+
+ use URI;
+ my $url = URI->new('http://www.oreilly.com/catalog/');
+ $dup = $url->clone( );
+ $url->path('/weblogs');
+ print "Changed path: ", $url->path( ), "\n";
+ print "Original path: ", $dup->path( ), "\n";
+
+When run, Example 4-2 prints:
+
+ Changed path: /weblogs
+ Original path: /catalog/
+
+=head2 4.1.2. Output
+
+Treat a URI object as a string and you'll get the URL:
+
+ $url = URI->new('http://www.example.int');
+ $url->path('/search.cgi');
+ print "The URL is now: $url\n";
+ The URL is now: http://www.example.int/search.cgi
+
+You might find it useful to I<normalize> the URL before printing it:
+
+ $url->canonical( );
+
+Exactly what this does depends on the specific type of URL, but it
+typically converts the hostname to lowercase, removes the port if it's
+the default port (for example, I<http://www.eXample.int:80> becomes
+I<http://www.example.int>), makes escape sequences uppercase (e.g.,
+C<%2e> becomes C<%2E>), and unescapes characters that don't need to be
+escaped (e.g., C<%41> becomes C<A>). In Chapter 12, "Spiders", we'll
+walk through a program that harvests data but avoids harvesting the
+same URL more than once. It keeps track of the URLs it's visited in a
+hash called C<%seen_url_before>; if there's an entry for a given URL,
+it's been harvested. The trick is to call C<canonical> on all URLs
+before entering them into that hash and before checking whether one
+exists in that hash. If not for calling C<canonical>, you might have
+visited I<http://www.example.int:80> in the past, and might be planning
+to visit I<http://www.EXample.int>, and you would see no duplication
+there. But when you call C<canonical> on both, they both become
+I<http://www.example.int>, so you can tell you'd be harvesting the same
+URL twice. If you think such duplication problems might arise in your
+programs, when in doubt, call C<canonical> right when you construct the
+URL, like so:
+
+ $url = URI->new('http://www.example.int')->canonical;
+
+=head2 4.1.3. Comparison
+
+To compare two URLs, use the C<eq( )> method:
+
+ if ($url_one->eq(url_two)) { ... }
+
+For example:
+
+ use URI;
+ my $url_one = URI->new('http://www.example.int');
+ my $url_two = URI->new('http://www.example.int/search.cgi');
+ $url_one->path('/search.cgi');
+ if ($url_one->eq($url_two)) {
+   print "The two URLs are equal.\n";
+ }
+ The two URLs are equal.
+
+Two URLs are equal if they are represented by the same string when
+normalized. The C<eq( )> method is faster than the C<eq> string
+operator:
+
+ if ($url_one eq $url_two) { ... } # inefficient!
+
+To see if two values refer not just to the same URL, but to the same
+URI object, use the C<==> operator:
+
+ if ($url_one == $url_two) { ... }
+
+For example:
+
+ use URI;
+ my $url = URI->new('http://www.example.int');
+ $that_one = $url;
+ if ($that_one == $url) {
+   print "Same object.\n";
+ }
+ Same object.
+
+=head2 4.1.4. Components of a URL
+
+A generic URL looks like Figure 4-1.
+
+Figure 4-1
+
+=head2 Figure 4-1. Components of a URL
+
+The URI class provides methods to access each component. Some
+components are available only on some schemes (for example, C<mailto:>
+URLs do not support the I<C<userinfo>>, I<C<host>>, or C<I<port>>
+components).
+
+In addition to the obvious C<scheme( )>, C<userinfo( )>, C<host( )>,
+C<port( )>, C<path( )>, C<query( )>, and C<fragment( )> methods, there
+are some useful but less-intuitive ones.
+
+=over
+
+=item C<$url-E<gt>path_query([>C<I<newval>>C<]);>
+
+The path and query components as a single string, e.g.,
+C</hello.php?user=21>.
+
+=item C<$url-E<gt>path_segments([>C<I<segment>>C<, ...]);>
+
+In scalar context, it is the same as C<path( )>, but in list context,
+it returns a list of path segments (directories and maybe a filename).
+For example:
+
+ $url = URI->new('http://www.example.int/eye/sea/ewe.cgi');
+ @bits = $url->path_segments( );
+ for ($i=0; $i < @bits; $i++) {
+   print "$i {$bits[$i]}\n";
+ }
+ print "\n\n";
+ 0 {}
+ 1 {eye}
+ 2 {sea}
+ 3 {ewe.cgi}
+
+=item C<$url-E<gt>host_port([>C<I<newval>>C<])>
+
+The hostname and port as one value, e.g., C<www.example.int:8080>.
+
+=item C<$url-E<gt>default_port( );>
+
+The default port for this scheme (e.g., 80 for C<http> and 21 for
+C<ftp>).
+
+=back
+
+For a URL that simply lacks one of those parts, the method for that
+part generally returns C<undef>:
+
+ use URI;
+ my $uri = URI->new("http://stuff.int/things.html");
+ my $query = $uri->query;
+ print defined($query) ? "Query: <$query>\n" : "No query\n";
+ No query
+
+However, some kinds of URLs C<can't> have certain components. For
+example, a C<mailto>: URL doesn't have a I<C<host>> component, so code
+that calls C<host( )> on a C<mailto>: URL will die. For example:
+
+ use URI;
+ my $uri = URI->new('mailto:hey-you@mail.int');
+ print $uri->host;
+ Can't locate object method "host" via package "URI::mailto"
+
+This has real-world implications. Consider extracting all the URLs in a
+document and going through them like this:
+
+ foreach my $url (@urls) {
+   $url = URI->new($url);
+   my $hostname = $url->host;
+   next unless $Hosts_to_ignore{$hostname};
+   ...otherwise ...
+ }
+
+This will die on a C<mailto:> URL, which doesn't have a C<host( )>
+method. You can avoid this by using C<can( )> to see if you can call a
+given method:
+
+ foreach my $url (@urls) {
+   $url = URI->new($url);
+   next unless $url->can('host');
+   my $hostname = $url->host;
+   ...
+
+or a bit less directly:
+
+ foreach my $url (@urls) {
+   $url = URI->new($url);
+   unless('http' eq $url->scheme) {
+     print "Odd, $url is not an http url!  Skipping.\n";
+     next;
+   }
+   my $hostname = $url->host;
+   ...and so forth...
+
+Because all URIs offer a C<scheme> method, and all C<http>: URIs
+provide a C<host( )> method, this is assuredly safe.L<[1]|/FOOTNOTE-1>
+For the curious, what URI schemes allow for what is explained in the
+documentation for the URI class, as well as the documentation for some
+specific subclasses like URI::ldap.
+
+=over
+
+[1] Of the methods illustrated above, C<scheme>, C<path>, and
+C<fragment> are the only ones that are I<always> provided. It would be
+surprising to find a fragment on a C<mailto:> URLE<mdash>and who knows
+what it would meanE<mdash>but it's syntactically possible. In practical
+terms, this means even if you have a C<mailto:> URL, you can call
+C<$url-E<gt>fragment> without it being an error.
+
+=back
+
+=head2 4.1.5. Queries
+
+The URI class has two methods for dealing with query data above and
+beyond the C<query>( ) and C<path_query( )> methods we've already
+discussed.
+
+In the very early days of the web, queries were simply text strings.
+Spaces were encoded as plus (C<+>) characters:
+
+ http://www.example.int/search?i+like+pie
+
+The C<query_keywords( )> method works with these types of queries,
+accepting and returning a list of keywords:
+
+ @words = $url->query_keywords([keywords, ...]);
+
+For example:
+
+ use URI;
+ my $url = URI->new('http://www.example.int/search?i+like+pie');
+ @words = $url->query_keywords( );
+ print $words[-1], "\n";
+ pie
+
+More modern queries accept a list of named values. A name and its value
+are separated by an equals sign (C<=>), and such pairs are separated
+from each other with ampersands (C<&>):
+
+ http://www.example.int/search?food=pie&action=like
+
+The C<query_form( )> method lets you treat each such query as a list of
+keys and values:
+
+ @params = $url->query_form([key,value,...);
+
+For example:
+
+ use URI;
+ my $url = URI->new('http://www.example.int/search?food=pie&action=like');
+ @params = $url->query_form( );
+ for ($i=0; $i < @params; $i++) {
+   print "$i {$params[$i]}\n";
+ }
+ 0 {food}
+ 1 {pie}
+ 2 {action}
+ 3 {like}
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch04_01.htm
+# 20715 bytes of input
+#Sun Nov 11 18:10:06 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Deleting phrasal "a" element (`a_2) because it has super-phrasal elements (`br_1) as children.
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch04_03.htm"
+# Untranslatable link: "ch04_04.htm"
+# Untranslatable link: "ch04_01.htm#perllwp-CHP-4-EX-1"
+# Untranslatable link: "ch04_01.htm#perllwp-CHP-4-EX-1"
+# Untranslatable link: "ch04_01.htm#perllwp-CHP-4-EX-2"
+# Untranslatable link: "ch04_01.htm#perllwp-CHP-4-EX-2"
+# Untranslatable link: "ch12_01.htm"
+# Untranslatable link: "ch04_01.htm#perllwp-CHP-4-FIG-1"

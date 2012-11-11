@@ -1,0 +1,103 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 12.2. A User Agent for Robots
+
+So far in this book, we've been using one type of user-agent object:
+objects of the class LWP::UserAgent. This is generally appropriate for
+a program that makes only a few undemanding requests of a remote
+server. But for cases in which we want to be quite sure that the robot
+behaves itself, the best way to start is by using LWP::RobotUA instead
+of LWP::UserAgent.
+
+An LWP::RobotUA object is like an LWP::UserAgent object, with these
+exceptions:
+
+=over
+
+=item *
+
+Instead of calling C<$browser = LWP::UserAgent-E<gt>new( )>, you call:
+
+ $robot = LWP::RobotUA->new( 'botname/1.2', 'me@myhost.int' )
+
+Specify a reasonably unique name for the bot (with an I<C<X>>C<.>I<Y>
+version number) and an email address where you can be contacted about
+the program, if anyone needs to do so.
+
+=item *
+
+When you call C<$robot-E<gt>get(...)> or any other method that performs
+a request (C<head( )>, C<post( )>, C<request( )>, C<simple_request(
+)>), LWP calls C<sleep( )> to wait until enough time has passed since
+the last request was made to that server.
+
+=item *
+
+When you request anything from a given HTTP server using an
+LWP::RobotUA C<$robot> object, LWP will make sure it has consulted that
+server's I<robots.txt> file, where the server's administrator can
+stipulate that certain parts of his server are off limits to some or
+all bots. If you request something that's off limits, LWP won't
+actually request it, and will return a response object with a 403
+(Forbidden) error, with the explanation "Forbidden by robots.txt."
+
+For specifics on I<robots.txt> files, see the documentation for the LWP
+module called WWW::RobotRules, and also be sure to read
+http://www.robotstxt.org/wc/robots.html
+(http://www.robotstxt.org/wc/robots.html).
+
+=back
+
+Besides having all the attributes of an LWP::UserAgent object, an
+LWP::RobotUA object has one additional interesting attribute,
+C<$robot-E<gt>delay($minutes)>, which controls how long this object
+should wait between requests to the same host. The current default
+value is one minute. Note that you can set it to a non-integer number
+of minutes. For example, to set the delay to seven seconds, use
+C<$robot-E<gt>delay(7/60)>.
+
+So we can take our I<New York Times> program from Chapter 11, "Cookies,
+Authentication,and Advanced Requests" and make it into a scrupulously
+well-behaved robot by changing this one line:
+
+ my $browser = LWP::UserAgent->new( );
+
+to this:
+
+ use LWP::RobotUA;
+ my $browser = LWP::RobotUA->new( 'JamiesNYTBot/1.0',
+   'jamie@newsjunkie.int' # my address
+ );
+ $browser->delay(5/60); # 5 second delay between requests
+
+We may not notice any particular effect on how the program behaves, but
+it makes quite sure that the C<$browser> object won't perform its
+requests too quickly, nor request anything the I<Times>'s webmaster
+thinks robots shouldn't request.
+
+In new programs, I typically use C<$robot> as the variable for holding
+LWP::RobotUA objects instead of C<$browser>. But this is a merely
+cosmetic difference; nothing requires us to replace every C<$browser>
+with C<$robot> in the I<Times> program when we change it from using an
+LWP::UserAgent object to an LWP::RobotUA object.
+
+You I<can> freely use LWP::RobotUA anywhere you could use
+LWP::UserAgent, in a Type One or Type Two spider. And you I<really
+should> use LWP::RobotUA as the basis for any Type Three or Type Four
+spiders. You should use it not just so you can effortlessly abide by
+I<robots.txt> rules, but also so that you don't have to remember to
+write in C<sleep> statements all over your programs to keep it from
+using too much of the remote server's bandwidthE<mdash>or yours!
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch12_02.htm
+# 5280 bytes of input
+#Sun Nov 11 18:10:09 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch11_01.htm"

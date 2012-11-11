@@ -1,0 +1,67 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 3.3. Inside the do_GET and do_POST Functions
+
+You now know enough to follow the C<do_GET( )> and C<do_POST( )>
+functions introduced in Chapter 2, "Web Basics". Let's look at
+C<do_GET( )> first.
+
+Start by loading the module, then declare the C<$browser> variable that
+will hold the user agent. It's declared outside the scope of the
+C<do_GET( )> subroutine, so it's essentially a static variable,
+retaining its value between calls to the subroutine. For example, if
+you turn on support for HTTP cookies, this browser could persist
+between calls to C<do_GET( )>, and cookies set by the server in one
+call would be sent back in a subsequent call.
+
+ use LWP;
+ my $browser;
+ sub do_GET {
+
+Next, create the user agent if it doesn't already exist:
+
+ $browser = LWP::UserAgent->new( ) unless $browser;
+
+Enable proxying, if you're behind a firewall:
+
+ $browser->env_proxy();
+
+Then perform a GET request based on the subroutine's parameters:
+
+ my $response = $browser->request(@_);
+
+In list context, you return information provided by the response
+object: the content, status line, a Boolean indicating whether the
+status meant success, and the response object itself:
+
+ return($response->content, $response->status_line, $response->is_success, $response)
+   if wantarray;
+
+If there was a problem and you called in scalar context, we return
+C<undef>:
+
+ return unless $response->is_success;
+
+Otherwise we return the content:
+
+   return $response->content;
+ }
+
+The C<do_POST( )> subroutine is just like C<do_GET( )>, only it uses
+the C<post( )> method instead of C<get( )>.
+
+The rest of this chapter is a detailed reference to the two classes
+we've covered so far: LWP::UserAgent and HTTP::Response.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch03_03.htm
+# 3181 bytes of input
+#Sun Nov 11 18:10:05 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch02_01.htm"

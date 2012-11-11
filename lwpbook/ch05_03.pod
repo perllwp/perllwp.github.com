@@ -1,0 +1,120 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 5.3. Automating Form Analysis
+
+Rather than searching through HTML hoping that you've found all the
+form components, you can automate the task. Example 5-2 contains a
+program, I<formpairs.pl>, that extracts the names and values from GET
+or POST requests.
+
+=head2 Example 5-2. formpairs.pl
+
+ #!/usr/local/bin/perl -w
+ # formpairs.pl - extract names and values from HTTP requests
+ 
+ use strict;
+ my $data;
+ if(! $ENV{'REQUEST_METHOD'}) { # not run as a CGI
+   die "Usage: $0 \"url\"\n" unless $ARGV[0];
+   $data = $ARGV[0];
+   $data = $1 if $data =~ s/^\w+\:.*?\?(.+)//;
+   print "Data from that URL:\n(\n";
+ } elsif($ENV{'REQUEST_METHOD'} eq 'POST') {
+   read(STDIN, $data, $ENV{'CONTENT_LENGTH'});
+   print "Content-type: text/plain\n\nPOST data:\n(\n";
+ } else {
+   $data = $ENV{'QUERY_STRING'};
+   print "Content-type: text/plain\n\nGET data:\n(\n";
+ }
+ for (split '&', $data, -1) {   # Assumes proper URLencoded input
+   tr/+/ /;   s/"/\\"/g;   s/=/\" => \"/;   s/%20/ /g;
+   s/%/\\x/g;  # so %0d => \x0d
+   print "  \"$_\",\n";
+ }
+ print ")\n";
+
+That program, when run as a command-line utility, takes a URL as its
+one argument, decodes the encoded GET query, and prints it in more
+Perlish terms:
+
+ % perl formpairs.pl "http://www.census.gov/cgi-bin/gazetteer?city=IEG
+ &state=&zip="
+ Data from that URL:
+ (
+   "city" => "IEG",
+   "state" => "",
+   "zip" => "",
+ )
+
+Using a more complex URL (wrapped here for readability) illustrates the
+benefit of it:
+
+ % perl -w formpairs.pl http://www.altavista.com/sites/search/web?q=
+ pie+AND+rhubarb+AND+strawberry%0D%0AAND+NOT+crumb&kl=en&r=&dt=tmperiod
+ &d2=0&d0=&d1=&sc=on&nbq=30&pg=aq&search=Search
+ Data from that URL:
+ (
+   "q" => "pie AND rhubarb AND strawberry\x0D\x0AAND NOT crumb",
+   "kl" => "en",
+   "r" => "",
+   "dt" => "tmperiod",
+   "d2" => "0",
+   "d0" => "",
+   "d1" => "",
+   "sc" => "on",
+   "nbq" => "30",
+   "pg" => "aq",
+   "search" => "Search",
+ )
+
+The same program also functions as a CGI, so if you want to see what
+data a given form ends up submitting, you can simply change the form
+element's C<action> attribute to a URL where you've set up that program
+as a CGI. As a CGI, it accepts both GET and POST methods.
+
+For example:
+
+ <form method="post" action="http://myhost.int/cgi-bin/formpairs.pl">
+ Kind of pie: <input name="what pie" size=15>
+ <input type="submit" value="Mmm pie">
+ </form>
+
+When you fill the one blank out with "tasty pie!" and press the "Mmm
+pie" button, the CGI will print:
+
+ POST data:
+ (
+   "what pie" => "tasty pie\x21",
+ )
+
+A more ad hoc solution that doesn't involve bothering with a CGI is to
+take the local copy of the form, set the form tag's C<method> attribute
+to C<get>, set its C<action> attribute to C<dummy.txt>, and create a
+file I<dummy.txt> consisting of the text "Look at my URL!" or the like.
+Then, when you submit the form, you will see only the "Look at my URL!"
+page, but the browser's "Location"/"Address"/"URL" window will show a
+URL like this:
+
+ file:///C%7C/form_work/dummy.txt?what+pie=tasty+pie%21
+
+You can then copy that URL into a shell window as the argument to
+I<formpairs.pl>:
+
+ % perl formpairs.pl "file:///C%7C/form_work/dummy.txt?what+pie=tasty+pie%21"
+ Data from that URL:
+ (
+   "what pie" => "tasty pie\x21",
+ )
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch05_03.htm
+# 5606 bytes of input
+#Sun Nov 11 18:10:06 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch05_03.htm#perllwp-CHP-5-EX-2"

@@ -1,0 +1,424 @@
+=head1 Perl & LWP
+
+by Sean M. Burke
+
+"Fetching web pages, Parsing HTML, Writing Spiders, & More"
+
+(Download complete book as .zip)
+(http://interglacial.com/temp/lwpbook.zip)
+
+=head2 Table of Contents
+
+Click to enlarge the blesboks. CLICK THEM!
+
+=over
+
+=item * Introduction to the 2007 online edition of Perl & LWP
+
+=item * Foreword
+
+=item * Preface
+
+=item * Search!
+
+=item * Chapter 1: I<Introduction to Web Automation>
+
+=item * Chapter 2: I<Web Basics>
+
+=item * Chapter 3: I<The LWP Class Model>
+
+=item * Chapter 4: I<URLs>
+
+=item * Chapter 5: I<Forms>
+
+=item * Chapter 6: I<Simple HTML Processing with Regular Expressions>
+
+=item * Chapter 7: I<HTML Processing with Tokens>
+
+=item * Chapter 8: I<Tokenizing Walkthrough>
+
+=item * Chapter 9: I<HTML Processing with Trees>
+
+=item * Chapter 10: I<Modifying HTML with Trees>
+
+=item * Chapter 11: I<Cookies, Authentication, and Advanced Requests>
+
+=item * Chapter 12: I<Spiders>
+
+=item * Appendix A: I<LWP Modules>
+
+=item * Appendix B: I<HTTP Status Codes>
+
+=item * Appendix C: I<Common MIME Types>
+
+=item * Appendix D: I<Language Tags>
+
+=item * Appendix E: I<Common Content Encodings>
+
+=item * Appendix F: I<ASCII Table>
+
+=item * Appendix G: I<User's View of Object-Oriented Modules>
+
+=item * Index
+
+=item * Colophon
+
+=item * Copyright Page
+
+=back
+
+=over
+
+=item * Introduction to the 2007 online edition of Perl and LWP
+
+=item * Foreword, by Gisle Aas
+
+=item * Search!
+
+=item * Preface
+
+=item * Structure of This Book
+
+=item * Order of Chapters
+
+=item * Important Standards Documents
+
+=item * Conventions Used in This Book
+
+=item * Comments & Questions
+
+=item * Acknowledgments
+
+=item * Introduction to Web Automation
+
+=item * History of LWP
+
+=item * Installing LWP
+
+=item * Words of Caution
+
+=item * LWP in Action
+
+=item * Web Basics
+
+=item * An HTTP Transaction
+
+=item * LWP::Simple
+
+=item * Fetching Documents Without LWP::Simple
+
+=item * Example: AltaVista
+
+=item * HTTP POST
+
+=item * Example: Babelfish
+
+=item * The LWP Class Model
+
+=item * Programming with LWP Classes
+
+=item * Inside the do_GET and do_POST Functions
+
+=item * User Agents
+
+=item * HTTP::Response Objects
+
+=item * LWP Classes: Behind the Scenes
+
+=item * URLs
+
+=item * Relative URLs
+
+=item * Converting Absolute URLs to Relative
+
+=item * Converting Relative URLs to Absolute
+
+=item * Forms
+
+=item * LWP and GET Requests
+
+=item * Automating Form Analysis
+
+=item * Idiosyncrasies of HTML Forms
+
+=item * POST Example: License Plates
+
+=item * POST Example: ABEBooks.com
+
+=item * File Uploads
+
+=item * Limits on Forms
+
+=item * Simple HTML Processing with Regular Expressions
+
+=item * Regular Expression Techniques
+
+=item * Troubleshooting
+
+=item * When Regular Expressions Aren't Enough
+
+=item * Example: Extracting Links from a Bookmark File
+
+=item * Example: Extracting Links from Arbitrary HTML
+
+=item * Example: Extracting Temperatures from Weather Underground
+
+=item * HTML Processing with Tokens
+
+=item * Basic HTML::TokeParser Use
+
+=item * Individual Tokens
+
+=item * Token Sequences
+
+=item * More HTML::TokeParser Methods
+
+=item * Using Extracted Text
+
+=item * Tokenizing Walkthrough
+
+=item * Getting the Data
+
+=item * Inspecting the HTML
+
+=item * First Code
+
+=item * Narrowing In
+
+=item * Rewrite for Features
+
+=item * Alternatives
+
+=item * HTML Processing with Trees
+
+=item * HTML::TreeBuilder
+
+=item * Processing
+
+=item * Example: BBC News
+
+=item * Example: Fresh Air
+
+=item * Modifying HTML with Trees
+
+=item * Deleting Images
+
+=item * Detaching and Reattaching
+
+=item * Attaching in Another Tree
+
+=item * Creating New Elements
+
+=item * Cookies, Authentication, and Advanced Requests
+
+=item * Adding Extra Request Header Lines
+
+=item * Authentication
+
+=item * An HTTP Authentication Example:The Unicode Mailing Archive
+
+=item * Spiders
+
+=item * A User Agent for Robots
+
+=item * Example: A Link-Checking Spider
+
+=item * Ideas for Further Expansion
+
+=item * LWP Modules
+
+=item * HTTP Status Codes
+
+=item * 200s: Successful
+
+=item * 300s: Redirection
+
+=item * 400s: Client Errors
+
+=item * 500s: Server Errors
+
+=item * Common MIME Types
+
+=item * Language Tags
+
+=item * Common Content Encodings
+
+=item * ASCII Table
+
+=item * User's View of Object-Oriented Modules
+
+=item * Modules and Their Functional Interfaces
+
+=item * Modules with Object-Oriented Interfaces
+
+=item * What Can You Do with Objects?
+
+=item * What's in an Object?
+
+=item * What Is an Object Value?
+
+=item * So Why Do Some Modules Use Objects?
+
+=item * The Gory Details
+
+=item * Colophon
+
+=item * Copyright
+
+=back
+
+=over
+
+C<http://lwp.interglacial.com/ (http://lwp.interglacial.com/)>
+
+ISBN-10: 0596001789
+
+ISBN-13: 978-0596001780
+
+June 2002: First edition, O'Reilly
+(http://www.oreilly.com/catalog/perllwp)
+
+March 2007+: Online edition 1.1 (http://lwp.interglacial.com/)
+
+=back
+
+Get the print edition: O'Reilly
+(http://www.oreilly.com/catalog/perllwp) E<middot> Isbn.nu
+(http://isbn.nu/0596001789) E<middot> Powell's
+(http://www.powells.com/biblio/0596001789) E<middot> Amazon
+(http://amazon.com/dp/0596001789) E<middot> Amazon-UK
+(http://amazon.co.uk/dp/0596001789)
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file index.html
+# 10232 bytes of input
+#Sun Nov 11 18:16:12 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "navimgs/cover_lg.jpg"
+# Untranslatable link: "intro.htm"
+# Untranslatable link: "foreword.htm"
+# Untranslatable link: "ch00_01.htm"
+# Untranslatable link: "search.htm"
+# Untranslatable link: "ch01_01.htm"
+# Untranslatable link: "ch02_01.htm"
+# Untranslatable link: "ch03_01.htm"
+# Untranslatable link: "ch04_01.htm"
+# Untranslatable link: "ch05_01.htm"
+# Untranslatable link: "ch06_01.htm"
+# Untranslatable link: "ch07_01.htm"
+# Untranslatable link: "ch08_01.htm"
+# Untranslatable link: "ch09_01.htm"
+# Untranslatable link: "ch10_01.htm"
+# Untranslatable link: "ch11_01.htm"
+# Untranslatable link: "ch12_01.htm"
+# Untranslatable link: "appa_01.htm"
+# Untranslatable link: "appb_01.htm"
+# Untranslatable link: "appc_01.htm"
+# Untranslatable link: "appd_01.htm"
+# Untranslatable link: "appe_01.htm"
+# Untranslatable link: "appf_01.htm"
+# Untranslatable link: "appg_01.htm"
+# Untranslatable link: "index/index.html"
+# Untranslatable link: "colophon.htm"
+# Untranslatable link: "copyrght.htm"
+# Untranslatable link: "intro.htm"
+# Untranslatable link: "foreword.htm"
+# Untranslatable link: "search.htm"
+# Untranslatable link: "ch00_01.htm"
+# Untranslatable link: "ch00_02.htm"
+# Untranslatable link: "ch00_03.htm"
+# Untranslatable link: "ch00_04.htm"
+# Untranslatable link: "ch00_05.htm"
+# Untranslatable link: "ch00_06.htm"
+# Untranslatable link: "ch00_07.htm"
+# Untranslatable link: "ch01_01.htm"
+# Untranslatable link: "ch01_02.htm"
+# Untranslatable link: "ch01_03.htm"
+# Untranslatable link: "ch01_04.htm"
+# Untranslatable link: "ch01_05.htm"
+# Untranslatable link: "ch02_01.htm"
+# Untranslatable link: "ch02_02.htm"
+# Untranslatable link: "ch02_03.htm"
+# Untranslatable link: "ch02_04.htm"
+# Untranslatable link: "ch02_05.htm"
+# Untranslatable link: "ch02_06.htm"
+# Untranslatable link: "ch02_07.htm"
+# Untranslatable link: "ch03_01.htm"
+# Untranslatable link: "ch03_02.htm"
+# Untranslatable link: "ch03_03.htm"
+# Untranslatable link: "ch03_04.htm"
+# Untranslatable link: "ch03_05.htm"
+# Untranslatable link: "ch03_06.htm"
+# Untranslatable link: "ch04_01.htm"
+# Untranslatable link: "ch04_02.htm"
+# Untranslatable link: "ch04_03.htm"
+# Untranslatable link: "ch04_04.htm"
+# Untranslatable link: "ch05_01.htm"
+# Untranslatable link: "ch05_02.htm"
+# Untranslatable link: "ch05_03.htm"
+# Untranslatable link: "ch05_04.htm"
+# Untranslatable link: "ch05_05.htm"
+# Untranslatable link: "ch05_06.htm"
+# Untranslatable link: "ch05_07.htm"
+# Untranslatable link: "ch05_08.htm"
+# Untranslatable link: "ch06_01.htm"
+# Untranslatable link: "ch06_02.htm"
+# Untranslatable link: "ch06_03.htm"
+# Untranslatable link: "ch06_04.htm"
+# Untranslatable link: "ch06_05.htm"
+# Untranslatable link: "ch06_06.htm"
+# Untranslatable link: "ch06_07.htm"
+# Untranslatable link: "ch07_01.htm"
+# Untranslatable link: "ch07_02.htm"
+# Untranslatable link: "ch07_03.htm"
+# Untranslatable link: "ch07_04.htm"
+# Untranslatable link: "ch07_05.htm"
+# Untranslatable link: "ch07_06.htm"
+# Untranslatable link: "ch08_01.htm"
+# Untranslatable link: "ch08_02.htm"
+# Untranslatable link: "ch08_03.htm"
+# Untranslatable link: "ch08_04.htm"
+# Untranslatable link: "ch08_05.htm"
+# Untranslatable link: "ch08_06.htm"
+# Untranslatable link: "ch08_07.htm"
+# Untranslatable link: "ch09_01.htm"
+# Untranslatable link: "ch09_02.htm"
+# Untranslatable link: "ch09_03.htm"
+# Untranslatable link: "ch09_04.htm"
+# Untranslatable link: "ch09_05.htm"
+# Untranslatable link: "ch10_01.htm"
+# Untranslatable link: "ch10_02.htm"
+# Untranslatable link: "ch10_03.htm"
+# Untranslatable link: "ch10_04.htm"
+# Untranslatable link: "ch10_05.htm"
+# Untranslatable link: "ch11_01.htm"
+# Untranslatable link: "ch11_02.htm"
+# Untranslatable link: "ch11_03.htm"
+# Untranslatable link: "ch11_04.htm"
+# Untranslatable link: "ch12_01.htm"
+# Untranslatable link: "ch12_02.htm"
+# Untranslatable link: "ch12_03.htm"
+# Untranslatable link: "ch12_04.htm"
+# Untranslatable link: "appa_01.htm"
+# Untranslatable link: "appb_01.htm"
+# Untranslatable link: "appb_02.htm"
+# Untranslatable link: "appb_03.htm"
+# Untranslatable link: "appb_04.htm"
+# Untranslatable link: "appb_05.htm"
+# Untranslatable link: "appc_01.htm"
+# Untranslatable link: "appd_01.htm"
+# Untranslatable link: "appe_01.htm"
+# Untranslatable link: "appf_01.htm"
+# Untranslatable link: "appg_01.htm"
+# Untranslatable link: "appg_02.htm"
+# Untranslatable link: "appg_03.htm"
+# Untranslatable link: "appg_04.htm"
+# Untranslatable link: "appg_05.htm"
+# Untranslatable link: "appg_06.htm"
+# Untranslatable link: "appg_07.htm"
+# Untranslatable link: "appg_08.htm"
+# Untranslatable link: "colophon.htm"
+# Untranslatable link: "copyrght.htm"

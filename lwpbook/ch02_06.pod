@@ -1,0 +1,75 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 2.6. HTTP POST
+
+Some forms use GET to submit their parameters to the server, but many
+use POST. The difference is POST requests pass the parameters in the
+body of the request, whereas GET requests encode the parameters into
+the URL being requested.
+
+Babelfish (http://babelfish.altavista.com
+(http://babelfish.altavista.com)) is a service that lets you translate
+text from one human language into another. If you're accessing
+Babelfish from a browser, you see an HTML form where you paste in the
+text you want translated, specify the language you want it translated
+from and to, and hit Translate. After a few seconds, a new page
+appears, with your translation.
+
+Behind the scenes, the browser takes the key/value pairs in the form:
+
+ urltext = I like pie
+ lp = en_fr
+ enc = utf8
+
+and rolls them into a HTTP request:
+
+ POST /translate.dyn HTTP/1.1
+ Host: babelfish.altavista.com
+ User-Agent: SuperDuperBrowser/14.6
+ Content-Type: application/x-www-form-urlencoded
+ Content-Length: 40
+   
+ urltext=I%20like%20pie&lp=en_fr&enc=utf8
+
+Just as we used a C<do_GET( )> function to automate a GET query,
+Example 2-7 uses a C<do_POST( )> function to automate POST queries.
+
+=head2 Example 2-7. The do_POST subroutine
+
+ use LWP;
+ my $browser;
+ sub do_POST {
+   # Parameters:
+   #  the URL,
+   #  an arrayref or hashref for the key/value pairs,
+   #  and then, optionally, any header lines: (key,value, key,value)
+   $browser = LWP::UserAgent->new( ) unless $browser;
+   my $resp = $browser->post(@_);
+   return ($resp->content, $resp->status_line, $resp->is_success, $resp)
+     if wantarray;
+   return unless $resp->is_success;
+   return $resp->content;
+ }
+
+Use C<do_POST( )> like this:
+
+ doc = do_POST(URL, [form_ref, [headers_ref]]);
+ (doc, status, success, resp) = do_POST(URL, [form_ref, [headers_ref]]);
+
+The return values in scalar and list context are as for C<do_GET( )>.
+The I<C<form_ref>> parameter is a reference to a hash containing the
+form parameters. The I<C<headers_ref>> parameter is a reference to a
+hash containing headers you want sent in the request.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch02_06.htm
+# 3635 bytes of input
+#Sun Nov 11 18:10:05 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch02_06.htm#perllwp-CHP-2-EX-7"

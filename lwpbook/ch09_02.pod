@@ -1,0 +1,223 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 9.2. HTML::TreeBuilder
+
+There are five steps to an HTML::TreeBuilder program:
+
+=over
+
+=item 1. Create the HTML::TreeBuilder object.
+
+=item 2. Set the parse options.
+
+=item 3. Parse the HTML.
+
+=item 4. Process it according to the needs of your problem.
+
+=item 5. Delete the HTML::TreeBuilder object.
+
+=back
+
+Example 9-2 is a simple HTML::TreeBuilder program.
+
+=head2 Example 9-2. Simple HTML::TreeBuilder program
+
+ #!/usr/bin/perl -w
+ use strict;
+ use HTML::TreeBuilder 3;  # make sure our version isn't ancient
+ my $root = HTML::TreeBuilder->new;
+ $root->parse(  # parse a string...
+ q{
+    <ul>
+      <li>Ice cream.</li>
+      <li>Whipped cream.
+      <li>Hot apple pie <br>(mmm pie)</li>
+    </ul>
+ });
+ $root->eof( );  # done parsing for this tree
+ $root->dump;   # print( ) a representation of the tree
+ $root->delete; # erase this tree because we're done with it
+
+Four of the five steps are shown here. The HTML::TreeBuilder class's
+C<new( )> constructor creates a new object. We don't set parse options,
+preferring instead to use the defaults. The C<parse( )> method parses
+HTML from a string. It's designed to let you supply HTML in chunks, so
+you use the C<eof( )> method to tell the parser when there's no more
+HTML. The C<dump( )> method is our processing here, printing a string
+form of the tree (the output is given in Example 9-3). And finally we
+C<delete( )> the tree to free the memory it used.
+
+=head2 Example 9-3. Output of Example 9-2
+
+ <html> @0 (IMPLICIT)
+   <head> @0.0 (IMPLICIT)
+   <body> @0.1 (IMPLICIT)
+     <ul> @0.1.0
+       <li> @0.1.0.0
+         "Ice cream."
+       <li> @0.1.0.1
+         "Whipped cream. "
+       <li> @0.1.0.2
+         "Hot apple pie "
+         <br> @0.1.0.2.1
+         "(mmm pie)"
+
+Each line in the dump represents either an element or text. Each
+element is identified by a dotted sequence of numbers (e.g., 0.1.0.2).
+This sequence identifies the position of the element in the tree (2nd
+child of the 0th child of the 1st child of the 0th child of the root of
+the tree). The dump also identifies some nodes as C<(IMPLICIT)>,
+meaning they weren't present in the HTML fragment but have been
+inferred to make a valid document parse tree.
+
+=head2 9.2.1. Constructors
+
+To create a new empty tree, use the C<new( )> method:
+
+ $root = HTML::TreeBuilder->new( );
+
+To create a new tree and parse the HTML in one go, pass one or more
+strings to the C<new_from_content( )> method:
+
+ $root = HTML::TreeBuilder->new_from_content([string, ...]);
+
+To create a new HTML::TreeBuilder object and parse HTML from a file,
+pass the filename or a filehandle to the C<new_from_file( )> method:
+
+ $root = HTML::TreeBuilder->new_from_file(filename);
+ $root = HTML::TreeBuilder->new_from_file(filehandle);
+
+If you use C<new_from_file( )> or C<new_from_content( )>, the parse is
+carried out with the default parsing options. To parse with any
+nondefault options, you must use the C<new( )> constructor and call
+C<parse_file( )> or C<parse( )>.
+
+=head2 9.2.2. Parse Options
+
+Set options for the parse by calling methods on the HTML::TreeBuilder
+object. These methods return the old value for the option and set the
+value if passed a parameter. For example:
+
+ $comments = $root->strict_comment( );
+ print "Strict comment processing is ";
+ print $comments ? "on\n" : "off\n";
+ $root->strict_comment(0);      # disable
+
+Some options affect the way the HTML standard is ignored or obeyed,
+while others affect the internal behavior of the parser. The full list
+of parser options follows.
+
+=over
+
+=item C<$root-E<gt>strict_comment([>C<I<boolean>>C<]);>
+
+The HTML standard says that a comment is terminated by an even number
+of C<--> s between the opening C<E<lt>> and the closing C<E<gt>>, and
+there must be nothing but whitespace between even and odd C<--> s. That
+part of the HTML standard is little known, little understood, and
+little obeyed. So most browsers simply accept any C<--E<gt>> as the end
+of a comment. If enabled via a true value, this option makes the
+HTML::TreeBuilder recognize I<only> those comments that obey the HTML
+standard. By default, this option is off, so that HTML::TreeBuilder
+will parse comments as normal browsers do.
+
+=item C<$root-E<gt>strict_names([>C<I<boolean>>C<]);>
+
+Some HTML has unquoted attribute values that include spaces, e.g.,
+C<E<lt>img> C<alt=big> C<dog!> C<src="dog.jpg"E<gt>>. If this option is
+enabled, that tag would be reported as text, because it doesn't obey
+the standard (C<dog!> is not a valid attribute name). If the option is
+disabled, as it is by default, source such as this is parsed as a tag,
+with a Boolean attribute called C<dog!> set.
+
+=item C<$root-E<gt>implicit_tags([>C<I<boolean>>C<]);>
+
+Enabled by default, this option makes the parser create nodes for
+missing start- or end-tags. If disabled, the parse tree simply reflects
+the input text, which is rarely useful.
+
+=item C<$root-E<gt>implicit_body_p_tag([>C<I<boolean>>C<]);>
+
+This option controls what happens to text or phrasal tags (such as
+C<E<lt>iE<gt>...E<lt>/iE<gt>>) that are directly in a
+C<E<lt>bodyE<gt>>, without a containing C<E<lt>pE<gt>>. By default, the
+text or phrasal tag nodes are children of the C<E<lt>bodyE<gt>>. If
+enabled, an implicit C<E<lt>pE<gt>> is created to contain the text or
+phrasal tags.
+
+=item C<$root-E<gt>ignore_unknown([>C<I<boolean>>C<]);>
+
+By default, unknown tags, such as C<E<lt>footerE<gt>>, are ignored.
+Enable this to create nodes in the parse tree for unknown tags.
+
+=item C<$root-E<gt>ignore_text([>C<I<boolean>>C<]);>
+
+By default, text in elements appears in the parse tree. Enable this
+option to create parse trees without the text from the document.
+
+=item C<$root-E<gt>ignore_ignorable_whitespace([>C<I<boolean>>C<]);>
+
+Whitespace between most tags is ignorable, and multiple whitespace
+characters are collapsed to one. If you want to preserve the whitespace
+present in the original HTML, enable this option.
+
+=back
+
+=head2 9.2.3. Parsing
+
+There are two ways of parsing HTML: from a file or from strings.
+
+Pass the C<parse_file( )> method a filename or filehandle to parse the
+HTML in that file:
+
+ $success = $root->parse_file(filename);
+ $success = $root->parse_file(filehandle);
+
+For example, to parse HTML from STDIN:
+
+ $root->parse_file(*STDIN) or die "Can't parse STDIN";
+
+The C<parse_file( )> method returns the HTML::TreeBuilder object if
+successful or C<undef> if an error occurred.
+
+The C<parse( )> method takes a chunk of HTML and parses it. Call
+C<parse( )> on each chunk, then call the C<eof( )> method when there's
+no more HTML to come.
+
+ $success = $root->parse(chunk);
+ $success = $root->eof( );
+
+This method is designed for situations where you are acquiring your
+HTML one chunk at a time. It's also useful when you're extracting HTML
+from a larger file and can't simply parse the entire file with
+C<parse_file( )>. In many cases, you could use C<new_from_content( )>,
+but recall that C<new_from_content( )> doesn't give you an opportunity
+to set nondefault parsing options.
+
+=head2 9.2.4. Cleanup
+
+The C<delete( )> method frees the tree and its elements, giving the
+memory it used back to Perl:
+
+ $root->delete( );
+
+Use this method in persistent environments such as mod_perl or when
+your program will parse a lot of HTML files. It's not enough to simply
+have C<$root> be a private variable that goes out of scope, or to
+assign a new value to C<$root>. Perl's current memory-management system
+fails on the kinds of data structures that HTML::Element uses.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch09_02.htm
+# 12047 bytes of input
+#Sun Nov 11 18:10:08 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch09_02.htm#perllwp-CHP-9-EX-2"
+# Untranslatable link: "ch09_02.htm#perllwp-CHP-9-EX-3"
+# Untranslatable link: "ch09_02.htm#perllwp-CHP-9-EX-2"

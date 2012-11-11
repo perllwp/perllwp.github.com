@@ -1,0 +1,212 @@
+=pod
+
+^ Perl and LWP ^
+
+Symbols & Numbers | A | B | C | D | E | F | G | H | I | J | K | L | M |
+N | O | P | Q | R | S | T | U | V | W | X | Y | Z
+
+=head1 Index: R
+
+=over
+
+=item radio buttons: 5.4.5. Radio Buttons
+
+=item RealAudio URLs, data extraction example: 8.1. The Problem
+
+=item redirection
+
+=over
+
+=item link-checking spider example: 12.3.4. Redirects
+
+=item user agents: 3.4.4. Redirection
+
+=back
+
+=item redirect_ok( ) method: 3.4.4. Redirection
+
+=item Referer header value: 11.2.2. Referer
+
+=item regexps, query_form( ) method: 5.2.2. GETting a query_form( ) URL
+
+=item regular expressions
+
+=over
+
+=item components: 6.2.7. Develop from Components
+
+=item data extraction: 6.1. Automating Data Extraction
+
+=item debugging: 6.3. Troubleshooting
+
+=item matches: 6.2.4. Minimal and Greedy Matches
+
+=over
+
+=item anchoring: 6.2.1. Anchor Your Match
+
+=item capture: 6.2.5. Capture
+
+=item greedy: 6.2.4. Minimal and Greedy Matches
+
+=item repeated: 6.2.6. Repeated Matches
+
+=back
+
+=item multiple steps: 6.2.8. Use Multiple Steps
+
+=item nested structures and: 6.4. When Regular Expressions Aren't
+Enough
+
+=item newlines and: 6.2.3. Embedded Newlines
+
+=item techniques for: 6.2. Regular Expression Techniques
+
+=item whitespace and: 6.2.2. Whitespace
+
+=back
+
+=item rel( ) method: 4.3. Converting Absolute URLs to Relative
+
+=item relative URLs: 4.2. Relative URLs
+
+=over
+
+=item constructors and: 4.1.1. Constructors
+
+=item converting from absolute: 4.3. Converting Absolute URLs to
+Relative
+
+=item converting to absolute: 4.4. Converting Relative URLs to Absolute
+
+=item fragment-only: 4.2. Relative URLs
+
+=item implicit information: 4.2. Relative URLs
+
+=back
+
+=item repeated matches, regular expressions: 6.2.6. Repeated Matches
+
+=item replace_with( ) method, constraints: 10.3.2. Constraints
+
+=item request methods, user agents and: 3.4.7. Request Methods
+
+=item request parameters: 3.4.2. Request Parameters
+
+=item requests
+
+=over
+
+=item adding: 11.2. Adding Extra Request Header Lines
+
+=item header lines, adding: 11.2. Adding Extra Request Header Lines
+
+=back
+
+=item requests_redirectable( ) attribute: 3.4.4. Redirection
+
+=item reset button: 5.4.8. Reset Buttons
+
+=back
+
+Symbols & Numbers | A | B | C | D | E | F | G | H | I | J | K | L | M |
+N | O | P | Q | R | S | T | U | V | W | X | Y | Z
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file idx_r.htm
+# 7915 bytes of input
+#Sun Nov 11 18:19:48 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "../index.html"
+# Untranslatable link: "idx_0.htm"
+# Untranslatable link: "idx_a.htm"
+# Untranslatable link: "idx_b.htm"
+# Untranslatable link: "idx_c.htm"
+# Untranslatable link: "idx_d.htm"
+# Untranslatable link: "idx_e.htm"
+# Untranslatable link: "idx_f.htm"
+# Untranslatable link: "idx_g.htm"
+# Untranslatable link: "idx_h.htm"
+# Untranslatable link: "idx_i.htm"
+# Untranslatable link: "idx_j.htm"
+# Untranslatable link: "idx_k.htm"
+# Untranslatable link: "idx_l.htm"
+# Untranslatable link: "idx_m.htm"
+# Untranslatable link: "idx_n.htm"
+# Untranslatable link: "idx_o.htm"
+# Untranslatable link: "idx_p.htm"
+# Untranslatable link: "idx_q.htm"
+# Untranslatable link: "idx_r.htm"
+# Untranslatable link: "idx_s.htm"
+# Untranslatable link: "idx_t.htm"
+# Untranslatable link: "idx_u.htm"
+# Untranslatable link: "idx_v.htm"
+# Untranslatable link: "idx_w.htm"
+# Untranslatable link: "idx_x.htm"
+# Untranslatable link: "idx_y.htm"
+# Untranslatable link: "idx_z.htm"
+# Untranslatable link: "../ch05_04.htm#INDEX-310"
+# Untranslatable link: "../ch08_01.htm#INDEX-475"
+# Untranslatable link: "../ch12_03.htm#INDEX-693"
+# Untranslatable link: "../ch03_04.htm#INDEX-143"
+# Untranslatable link: "../ch03_04.htm#INDEX-145"
+# Untranslatable link: "../ch11_02.htm#INDEX-634"
+# Untranslatable link: "../ch05_02.htm#INDEX-291"
+# Untranslatable link: "../ch06_02.htm#INDEX-375"
+# Untranslatable link: "../ch06_01.htm#INDEX-357"
+# Untranslatable link: "../ch06_03.htm#INDEX-385"
+# Untranslatable link: "../ch06_02.htm#INDEX-366"
+# Untranslatable link: "../ch06_02.htm#INDEX-360"
+# Untranslatable link: "../ch06_02.htm#INDEX-370"
+# Untranslatable link: "../ch06_02.htm#INDEX-367"
+# Untranslatable link: "../ch06_02.htm#INDEX-372"
+# Untranslatable link: "../ch06_02.htm#INDEX-377"
+# Untranslatable link: "../ch06_04.htm#INDEX-387"
+# Untranslatable link: "../ch06_02.htm#INDEX-365"
+# Untranslatable link: "../ch06_02.htm#INDEX-359"
+# Untranslatable link: "../ch06_02.htm#INDEX-363"
+# Untranslatable link: "../ch04_03.htm#INDEX-264"
+# Untranslatable link: "../ch04_02.htm#INDEX-251"
+# Untranslatable link: "../ch04_01.htm#INDEX-193"
+# Untranslatable link: "../ch04_03.htm#INDEX-260"
+# Untranslatable link: "../ch04_04.htm#INDEX-267"
+# Untranslatable link: "../ch04_02.htm#INDEX-257"
+# Untranslatable link: "../ch04_02.htm#INDEX-255"
+# Untranslatable link: "../ch06_02.htm#INDEX-374"
+# Untranslatable link: "../ch10_03.htm#INDEX-585"
+# Untranslatable link: "../ch03_04.htm#INDEX-157"
+# Untranslatable link: "../ch03_04.htm#INDEX-131"
+# Untranslatable link: "../ch11_02.htm#INDEX-629"
+# Untranslatable link: "../ch11_02.htm#INDEX-627"
+# Untranslatable link: "../ch03_04.htm#INDEX-144"
+# Untranslatable link: "../ch05_04.htm#INDEX-322"
+# Untranslatable link: "idx_0.htm"
+# Untranslatable link: "idx_a.htm"
+# Untranslatable link: "idx_b.htm"
+# Untranslatable link: "idx_c.htm"
+# Untranslatable link: "idx_d.htm"
+# Untranslatable link: "idx_e.htm"
+# Untranslatable link: "idx_f.htm"
+# Untranslatable link: "idx_g.htm"
+# Untranslatable link: "idx_h.htm"
+# Untranslatable link: "idx_i.htm"
+# Untranslatable link: "idx_j.htm"
+# Untranslatable link: "idx_k.htm"
+# Untranslatable link: "idx_l.htm"
+# Untranslatable link: "idx_m.htm"
+# Untranslatable link: "idx_n.htm"
+# Untranslatable link: "idx_o.htm"
+# Untranslatable link: "idx_p.htm"
+# Untranslatable link: "idx_q.htm"
+# Untranslatable link: "idx_r.htm"
+# Untranslatable link: "idx_s.htm"
+# Untranslatable link: "idx_t.htm"
+# Untranslatable link: "idx_u.htm"
+# Untranslatable link: "idx_v.htm"
+# Untranslatable link: "idx_w.htm"
+# Untranslatable link: "idx_x.htm"
+# Untranslatable link: "idx_y.htm"
+# Untranslatable link: "idx_z.htm"

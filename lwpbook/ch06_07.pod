@@ -1,0 +1,98 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 6.7. Example: Extracting Temperatures from Weather Underground
+
+The Weather Underground web site (http://www.wunderground.com
+(http://www.wunderground.com)) is a great source of meteorological
+information. Let's write a program to tell us which of the two O'Reilly
+offices, Cambridge and Sebastopol, is warmer and by how many degrees.
+
+First, we fetch the pages with the temperatures. A quick look around
+the Weather Underground site indicates that the best way to get the
+temperature for a place is to fetch a URL like:
+
+ http://www.wunderground.com/cgi-bin/findweather/getForecast?query=95472
+
+95472 is the Zip Code for the Sebastopol office, while 02140 is the Zip
+Code for the Cambridge office. The program begins by fetching those
+pages:
+
+ #!/usr/bin/perl -w
+   
+ use strict;
+ use LWP::Simple;
+   
+ my $url = "http://www.wunderground.com/cgi-bin/findweather/getForecast?query=";
+ my $ca = get("${url}95472"); # Sebastopol, California
+ my $ma = get("${url}02140"); # Cambridge, Massachusetts
+
+Next, we need to extract the temperature from the HTML. Viewing the
+source to one of the pages reveals the relevant portion as:
+
+ <tr ><td>Temperature</td>
+ <td><b>52&#176;</b> F</td></tr>
+
+Because we need to extract the temperature from multiple pages, we
+define a subroutine that takes the HTML string and returns the
+temperature:
+
+ sub current_temp {
+   local $_ = shift;
+   m{<tr ><td>Temperature</td>\s+<td><b>(\d+)} || die "No temp data?";
+   return $1;
+ }
+
+Now all that's left to do is extract the temperatures and display the
+message:
+
+ my $ca_temp = current_temp($ca);
+ my $ma_temp = current_temp($ma);
+ my $diff = $ca_temp - $ma_temp;
+   
+ print $diff > 0 ? "California" : "Massachusetts";
+ print " is warmer by ", abs($diff), " degrees F.\n";
+
+When you run the program, you see something like:
+
+ % ora-temps
+ California is warmer by 21 degrees F.
+
+The complete program is shown in Example 6-6.
+
+=head2 Example 6-6. ora-temps
+
+ #!/usr/bin/perl -w
+ 
+ use strict;
+ use LWP::Simple;
+ 
+ my $url = "http://www.wunderground.com/cgi-bin/findweather/getForecast?"
+         . "query=";
+ my $ca = get("${url}95472"); # Sebastopol, California
+ my $ma = get("${url}02140"); # Cambridge, Massachusetts
+ 
+ my $ca_temp = current_temp($ca);
+ my $ma_temp = current_temp($ma);
+ my $diff = $ca_temp - $ma_temp;
+ 
+ print $diff > 0 ? "California" : "Massachusetts";
+ print " is warmer by ", abs($diff), " degrees F.\n";
+ 
+ sub current_temp {
+   local $_ = shift;
+   m{<tr ><td>Temperature</td>\s+<td><b>(\d+)} || die "No temp data?";
+   return $1;
+ }
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch06_07.htm
+# 3876 bytes of input
+#Sun Nov 11 18:10:07 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch06_07.htm#perllwp-CHP-6-EX-6"

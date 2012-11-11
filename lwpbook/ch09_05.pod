@@ -1,0 +1,143 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 9.5. Example: Fresh Air
+
+Another HTML::TokeParser problem (in Chapter 8, "Tokenizing
+Walkthrough") was extracting relevant links from the program
+descriptions from the Fresh Air web site. There were aspects of the
+task that we will not review here (such as how to request a month's
+worth of weekday listings at a time), but we will instead focus on the
+heart of the program, which is how to take HTML source from a local
+file, feed it to HTML::TreeBuilder, and pull the interesting links out
+of the resulting tree.
+
+If we save the HTML source of a program description page as
+I<fresh1.html> and sift through its source, we get a 12-KB file. Only
+about one 1 KB of that is real content, like this:
+
+ ...
+ <A HREF="http://www.npr.org/ramfiles/fa/20010702.fa.ram">
+   <FONT FACE="Verdana, Charcoal, Sans Serif" COLOR="#FFCC00" SIZE="2">
+     Listen to <B>Monday - July 2, 2001</B>
+   </FONT>
+ </A>
+  
+ ...
+  
+    <A HREF="http://www.npr.org/ramfiles/fa/20010702.fa.01.ram">Listen to
+    <FONT FACE="Verdana, Charcoal, Sans Serif" COLOR="#ffffff" SIZE="3">
+    <B> Editor and writer Walter Kirn                            </B>
+    </FONT></A>
+                              
+ <BR>
+ <FONT FACE="Verdana, Charcoal, Sans Serif" COLOR="#ffffff" SIZE="2">
+ <BLOCKQUOTE>Editor and writer <A
+ HREF="http://freshair.npr.org/guestInfoFA.cfm?name=walterkirn">Walter
+ Kirn</A>'s new novel <I>Up in the Air</I> (Doubleday) is about 
+ ...
+ </BLOCKQUOTE></FONT>
+ <BR>
+  
+   <A HREF="http://www.npr.org/ramfiles/fa/20010702.fa.02.ram">Listen to
+   <FONT FACE="Verdana, Charcoal, Sans Serif" COLOR="#ffffff" SIZE="3">
+   <B> Casting director and actress Joanna Merlin             </B>
+   </FONT></A>
+  
+ <BR>
+ <FONT FACE="Verdana, Charcoal, Sans Serif" COLOR="#ffffff" SIZE="2">
+ <BLOCKQUOTE>Casting director and actress <A
+ HREF="http://freshair.npr.org/guestInfoFA.cfm?name=joannamerlin">Joanna
+ Merlin</A> has written a new guide for actors, <I>Auditioning: An
+ ...
+ </BLOCKQUOTE></FONT>
+ <BR>
+ ...
+
+The rest of the file is mostly taken up by some JavaScript, some search
+box forms, and code for a button bar, which contains image links like
+this:
+
+ ...
+ <A HREF="dayFA.cfm?todayDate=archive"><IMG SRC="images/nav_archived_on.gif" 
+ ALT="Archived Shows" WIDTH="124" HEIGHT="36" BORDER="0" HSPACE="0" VSPACE="0"></A>
+ <A HREF="commFA.cfm"><IMG SRC="images/nav_commentators_off.gif" ALT="Commentators" 
+ WIDTH="124" HEIGHT="36" BORDER="0" HSPACE="0" VSPACE="0"></A>
+ <A HREF="aboutFA.cfm"><IMG SRC="images/nav_about_off.gif" ALT="About Fresh Air" 
+ WIDTH="124" HEIGHT="36" BORDER="0" HSPACE="0" VSPACE="0"></A>
+ <A HREF="stationsFA.cfm"><IMG SRC="images/nav_stations_off.gif" ALT="Find a Station" 
+ WIDTH="124" HEIGHT="36" BORDER="0" HSPACE="0" VSPACE="0"></A>
+ ...
+
+Then, after the real program description text, there is code that links
+to the description pages for the previous and next shows:
+
+ ...
+ <TD WIDTH="50%" ALIGN="left" BGCOLOR="#4F4F85">
+   <FONT FACE="Verdana, Charcoal, Sans Serif" SIZE="2" COLOR="#FFCC00">
+     &#160;&#160;&#171;&#160;
+   </FONT>
+   <A HREF="dayFA.cfm?todayDate=06%2F29%2F2001">
+     <FONT FACE="Verdana, Charcoal, Sans Serif" SIZE="2" COLOR="#FFCC00">
+       Previous show
+     </FONT>
+  </A>
+ </TD>
+ <TD WIDTH="50%" ALIGN="right" BGCOLOR="#4F4F85">
+   <A HREF="dayFA.cfm?todayDate=07%2F03%2F2001">
+     <FONT FACE="Verdana, Charcoal, Sans Serif" SIZE="2" COLOR="#FFCC00">
+       Next show
+     </FONT>
+   </A>
+   <FONT FACE="Verdana, Charcoal, Sans Serif" SIZE="2" COLOR="#FFCC00">
+    &#160;&#187;&#160;&#160;
+   </FONT>
+ </TD>
+ ...
+
+The trick is in capturing the URLs and link text from each program link
+in the main text, while ignoring the button bar links and the "Previous
+Show" and "Next Show" links. Two criteria distinguish the links we want
+from the links we don't: First, each link that we want (i.e., each C<a>
+element with an C<href> attribute) has a C<font> element as a child;
+and secondly, the text content of the C<a> element starts with "Listen
+to" (which we incidentally want to leave out when we print the link
+text). This is directly implementable with calls to HTML::Element
+methods:
+
+ use HTML::TreeBuilder;
+ my $tree = HTML::TreeBuilder->new;
+ $tree->parse_file( 'fresh1.html' ) || die $!;
+ my $base_url = 'http://www.freshair.com/whatever';
+   # for resolving relative URLs
+ 
+ foreach my $a ( $tree->find_by_tag_name('a') ) {
+ 
+   my $href = $a->attr('href') || next;
+     # Make sure it has an href attribute
+ 
+   next unless grep ref($_) && $_->tag eq 'font', $a->content_list;
+     # Make sure (at least) one of its children is a font element
+   
+   my $text_content = $a->as_text;
+   next unless $text_content =~ s/^\s*Listen to\s+//s;
+     # Make sure its text content starts with that (and remove it)
+ 
+   # It's good!  Print it:
+   use URI;
+   print "$text_content\n  ", URI->new_abs($href, $base_url), "\n";
+ }
+ 
+ $tree->delete;  # Delete tree from memory
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch09_05.htm
+# 7228 bytes of input
+#Sun Nov 11 18:10:08 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch08_01.htm"

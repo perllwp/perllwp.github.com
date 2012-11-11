@@ -1,0 +1,73 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 2.4. Fetching Documents Without LWP::Simple
+
+LWP::Simple is convenient but not all powerful. In particular, we can't
+make POST requests or set request headers or query response headers. To
+do these things, we need to go beyond LWP::Simple.
+
+The general all-purpose way to do HTTP GET queries is by using the
+C<do_GET( )> subroutine shown in Example 2-5.
+
+=head2 Example 2-5. The do_GET subroutine
+
+ use LWP;
+ my $browser;
+ sub do_GET {
+   # Parameters: the URL,
+   #  and then, optionally, any header lines: (key,value, key,value)
+   $browser = LWP::UserAgent->new( ) unless $browser;
+   my $resp = $browser->get(@_);
+   return ($resp->content, $resp->status_line, $resp->is_success, $resp)
+     if wantarray;
+   return unless $resp->is_success;
+   return $resp->content;
+ }
+
+A full explanation of the internals of C<do_GET( )> is given in Chapter
+3, "The LWP Class Model". Until then, we'll be using it without fully
+understanding how it works.
+
+You can call the C<do_GET( )> function in either scalar or list
+context:
+
+ doc = do_GET(URL [header, value, ...]);
+ (doc, status, successful, response) = do_GET(URL [header, value, ...]);
+
+In scalar context, it returns the document or C<undef> if there is an
+error. In list context, it returns the document (if any), the status
+line from the HTTP response, a Boolean value indicating whether the
+status code indicates a successful response, and an object we can
+interrogate to find out more about the response.
+
+Recall that assigning to C<undef> discards that value. For example,
+this is how you fetch a document into a string and learn whether it is
+successful:
+
+ ($doc, undef, $successful, undef) = do_GET('http://www.suck.com/');
+
+The optional header and value arguments to C<do_GET( )> let you add
+headers to the request. For example, to attempt to fetch the German
+language version of the European Union home page:
+
+ $body = do_GET("http://europa.eu.int/",
+   "Accept-language" => "de",
+ );
+
+The C<do_GET( )> function that we'll use in this chapter provides the
+same basic convenience as LWP::Simple's C<get( )> but without the
+limitations.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch02_04.htm
+# 3738 bytes of input
+#Sun Nov 11 18:10:05 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch02_04.htm#perllwp-CHP-2-EX-5"
+# Untranslatable link: "ch03_01.htm"

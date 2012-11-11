@@ -1,0 +1,343 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 7.5. More HTML::TokeParser Methods
+
+Example 7-1 illustrates that often you aren't interested in every kind
+of token in a stream, but care only about tokens of a certain kind. The
+HTML::TokeParser interface supports this with three methods, C<get_tag(
+)>, C<get_text( )>, and C<get_trimmed_text( )> that do something other
+than simply get the next token.
+
+=over
+
+=item C<$text_string = $stream-E<gt>get_text( );>
+
+If the next token is text, return its value.
+
+=item C<$text_string = $stream-E<gt>get_text('foo');>
+
+Return all text up to the next C<foo> start-tag.
+
+=item C<$text_string = $stream-E<gt>get_text('/bar');>
+
+Return all text up to the next C</bar> end-tag.
+
+=item C<$text = $stream-E<gt>get_trimmed_text( );>
+
+=item C<$text = $stream-E<gt>get_trimmed_text('foo');>
+
+=item C<$text = $stream-E<gt>get_trimmed_text('/bar');>
+
+Like C<get_text( )> calls, except with initial and final whitespace
+removed, and all other whitespace collapsed.
+
+=item C<$tag_ref = $stream-E<gt>get_tag( );>
+
+Return the next start-tag or end-tag token.
+
+=item C<$tag_ref = $stream-E<gt>get_tag('foo', '/bar', 'baz');>
+
+Return the next C<foo> start-tag, C</bar> end-tag, or C<baz> start-tag.
+
+=back
+
+We will explain these methods in detail in the following sections.
+
+=head2 7.5.1. The get_text( ) Method
+
+The C<get_text( )> syntax is:
+
+ $text_string = $stream->get_text( );
+
+If C<$stream>'s next token is text, this gets it, resolves any entities
+in it, and returns its string value. Otherwise, this returns an empty
+string.
+
+For example, if you are parsing this snippet:
+
+ <h1 lang='en-GB'>Shatner Reprises Kirk R&ocirc;le</h1>
+
+and have just parsed the token for C<h1>, C<$stream-E<gt>get_text( )>
+returns "Shatner Reprises Kirk RE<ocirc>le." If you call it again (and
+again and again), it will return the empty string, because the next
+token waiting is not a text token but an C<h1> end-tag token.
+
+=head2 7.5.2. The get_text( ) Method with Parameters
+
+The syntax for C<get_text( )> with parameters is:
+
+ $text_string = $stream->get_text('foo');
+ $text_string = $stream->get_text('/bar');
+
+Specifying a C<foo> or C</bar> parameter changes the meaning of
+C<get_text( )>. If you specify a tag, you get all the text up to the
+next time that tag occurs (or until the end of the file, if that tag
+never occurs).
+
+For however many text tokens are found, their text values are taken,
+entity sequences are resolved, and they are combined and returned. (All
+the other sorts of tokens seen along the way are just ignored.)
+
+Note that the tag name that you specify (whether C<foo> or C</bar>)
+must be in lowercase.
+
+This sounds complex, but it works out well in real use. For example,
+imagine you've got this snippet:
+
+ <h1 lang='en-GB'>Star of <cite>Star Trek</cite> in New R&ocirc;le</h1>
+    <cite>American Psycho II</cite> in Production.
+    <!-- I'm not making this up, folks. -->
+    <br>Shatner to play FBI profiler.
+
+and that you've just parsed the token for C<h1>. Calling
+C<$stream-E<gt>get_text( )>, simply gets C<Star> C<of> . If, however,
+the task you're performing is the extraction of the text content of
+C<E<lt>h1E<gt>> elements, then what's called for is:
+
+ $stream->get_text('/h1')
+
+This returns C<Star of Star Trek in New RE<ocirc>le>.
+
+Calling:
+
+ $stream->get_text('br')
+
+returns:
+
+ "Star of Star Trek in New Rôle\n  American Psycho II in Production.\n   \n  "
+
+And if you instead called C<$stream-E<gt>get_text('schlock')> and there
+is no C<E<lt>schlock...E<gt>> in the rest of the document, you will get
+C<Star> C<of> C<Star> C<Trek> C<in> C<New> C<RE<ocirc>le\n> C<American>
+C<Psycho> C<II> C<in> C<Production.\n> C<\n> C<Shatner> C<to> C<play>
+C<FBI> C<profiler.\n>, plus whatever text there is in the rest of the
+document.
+
+Note that this never introduces whitespace where it's not there in the
+original. So if you're parsing this:
+
+ <table>
+ <tr><th>Height<th>Weight<th>Shoe Size</tr>
+ <tr><th>6' 2"<th>180lbs<th>n/a</tr>
+ </table>
+
+and you've just parsed the C<table> token, if you call:
+
+ $stream->get_text('/table')
+
+you'll get back:
+
+ "\nHeightWeightShoe Size\n6' 2"180lbsn/a\n"
+
+Not all nontext tokens are ignored by C<$stream-E<gt>get_text( )>. Some
+tags receive special treatment: if an C<img> or C<applet> tag is seen,
+it is treated as if it were a text token; if it has an C<alt>
+attribute, its value is used as the content of the virtual text token;
+otherwise, you get just the uppercase tag name in brackets: C<[IMG]> or
+C<[APPLET]>. For further information on altering and expanding this
+feature, see perldoc HTML::TokeParser in the documentation for the
+C<get_text> method, and possibly even the surprisingly short
+HTML::TokeParser source code.
+
+If you just want to turn off such special treatment for all tags:
+
+ $stream->{'textify'} = {}
+
+This is the only case of the C<$object-E<gt>{'thing'}> syntax we'll
+discuss in this book. In no other case does an object require us to
+access its internals directly like this, because it has no method for
+more normal access. For more information on this particular syntax, see
+perldoc perlref's documentation on hash references.
+
+=over
+
+Remember when I said "E<lt>!-- I'm not making this up, folks. --E<gt>",
+about I<American Psycho II>?
+
+I B<dare> you to look: http://us.imdb.com/title/tt0283877/
+(http://us.imdb.com/title/tt0283877/)
+
+=back
+
+=head2 7.5.3. The get_trimmed_text( ) Method
+
+The syntax for the C<get_trimmed_text( )> method is:
+
+ $text = $stream->get_trimmed_text( );
+ $text = $stream->get_trimmed_text('foo');
+ $text = $stream->get_trimmed_text('/bar');
+
+These work exactly like the corresponding C<$stream-E<gt>get_text( )>
+calls, except any leading and trailing whitespace is removed and each
+sequence of whitespace is replaced with a single space.
+
+Returning to our news example:
+
+ $html = <<<EOF ;
+ <h1 lang='en-GB'>Star of <cite>Star Trek</cite> in New R&ocirc;le</h1>
+    <cite>American Psycho II</cite> in Production.
+    <!-- I'm not making this up, folks. -->
+    <br>Shatner to play FBI profiler.
+ EOF
+ $stream = HTML::TokeParser->new(\$html);
+ $stream->get_token( );                      # skip h1
+
+The C<get_text( )> method would return C<Star> C<of> (with the trailing
+space), while the C<get_trimmed_text( )> method would return C<Star>
+C<of> (no trailing space).
+
+Similarly, C<$stream-E<gt>get_text('br')> would return:
+
+ "Star of Star Trek in New Rôle\n  American Psycho II in Production.\n   \n  "
+
+whereas C<$stream-E<gt>get_trimmed_text ('br')> would return:
+
+ "Star of Star Trek in New Rôle American Psycho II in Production."
+
+Notice that the medial newline-space-space became a single space, and
+the final newline-space-space-newline-space-space was simply removed.
+
+The caveat that C<get_text( )> does not introduce any new whitespace
+applies also to C<get_trimmed_text( )>. So where, in the last example
+in C<get_text( )>, you would have gotten C<\nHeightWeightShoe>
+C<Size\n6'> C<2"180lbsn/a\n>, C<get_trimmed_text( )> would return
+C<HeightWeightShoe> C<Size> C<6'> C<2"180lbsn/a>.
+
+=head2 7.5.4. The get_tag( ) Method
+
+The syntax for the C<get_tag( )> method is:
+
+ $tag_reference = $stream->get_tag( );
+
+This returns the next start-tag or end-tag token (throwing out anything
+else it has to skip to get there), except while C<get_token( )> would
+return start and end-tags in these formats:
+
+ ['S', 'hr', {'class','Ginormous'}, ['class'], '<hr class=Ginormous>']
+ ['E', 'p' , '</P>']
+
+C<get_tag( )> instead returns them in this format:
+
+ ['hr', {'class','Ginormous'}, ['class'], '<hr class=Ginormous>']
+ ['/p' , '</P>']
+
+That is, the first item has been taken away, and end-tag names start
+with C</>.
+
+=head2 7.5.4.1. Start-tags
+
+Unless C<$tag-E<gt>[0]> begins with a C</>, the tag represents a
+start-tag:
+
+ [$tag, $attribute_hash, $attribute_order_arrayref, $source]
+
+The components of this token are:
+
+=over
+
+=item C<$tag>
+
+The tag name, in lowercase.
+
+=item C<$attribute_hashref>
+
+A reference to a hash encoding the attributes of this tag. The
+(lowercase) attribute names are the keys of the hash.
+
+=item C<$attribute_order_arrayref>
+
+A reference to an array of (lowercase) attribute names, in case you
+need to access elements in order.
+
+=item C<$source>
+
+The original HTML for this token.
+
+=back
+
+The first two values are the most interesting ones, for most purposes.
+
+For example, parsing this HTML with C<$stream-E<gt>get_tag( )> :
+
+ <IMG SRC="kirk.jpg" alt="Shatner in r&ocirc;le of Kirk" WIDTH=352 height=522>
+
+gives this tag:
+
+ [
+   'img',
+   { 'alt' => 'Shatner in rôle of Kirk',
+      'height' => '522', 'src' => 'kirk.jpg', 'width' => '352'
+   },
+   [ 'src', 'alt', 'width', 'height' ],
+   '<IMG SRC="kirk.jpg" alt="Shatner in r&ocirc;le of Kirk" WIDTH=352 height=522>'
+ ]
+
+Notice that the tag and attribute names have been lowercased, and the
+C<&ocirc;> entity decoded within the C<alt> attribute.
+
+=head2 7.5.4.2. End-tags
+
+When C<$tag-E<gt>[0]> does begin with a C</>, the token represents an
+end-tag:
+
+ [ "/$tag", $source ]
+
+The components of this tag are:
+
+=over
+
+=item C<$tag>
+
+The lowercase name of the tag being closed, with a leading C</>.
+
+=item C<$source>
+
+The original HTML for this token.
+
+=back
+
+Parsing this HTML with C<$stream-E<gt>get_tag( )> :
+
+ </A>
+
+gives this tag:
+
+ [ '/a', '</A>' ]
+
+Note that if C<get_tag( )> reads to the end of the stream and finds no
+tag tokens, it will return C<undef>.
+
+=head2 7.5.5. The get_tag( ) Method with Parameters
+
+Pass a list of tags, to skip through the tokens until a matching tag is
+found:
+
+ $tag_reference = $stream->get_tag('foo', '/bar', 'baz');
+
+This returns the next start-tag or end-tag that matches any of the
+strings you provide (throwing out anything it has to skip to get
+there). Note that the tag name(s) that you provide as parameters must
+be in lowercase.
+
+If C<get_tag( )> reads to the end of the stream and finds no matching
+tag tokens, it will return C<undef>. For example, this code's
+C<get_tag( )> looks for C<img> start-tags:
+
+ while (my $img_tag = $stream->get_tag('img')) {
+   my $i = $img_tag->[1];            # attributes of this img tag
+   my @lack = grep !exists $i->{$_}, qw(alt height width);
+   print "Missing for ", $i->{'src'} || "????", ": @lack\n" if @lack;
+ }
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch07_05.htm
+# 16259 bytes of input
+#Sun Nov 11 18:10:07 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch07_03.htm#perllwp-CHP-7-EX-1"

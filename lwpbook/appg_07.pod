@@ -1,0 +1,33 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 G.7. So Why Do Some Modules Use Objects?
+
+All these details of using objects are definitely enough to make you
+wonderE<mdash>is it worth the bother? If you're a module author,
+writing your module with an object-oriented interface restricts the
+audience of potential users to those who understand the basic concepts
+of objects and object values, as well as Perl's syntax for calling
+methods. Why complicate things by having an object-oriented interface?
+
+A somewhat esoteric answer is that a module has an object-oriented
+interface because the module's insides are written in an
+object-oriented style. This article is about the basics of
+object-oriented I<interfaces>, and it'd be going far afield to explain
+what object-oriented I<design> is. But the short story is that
+object-oriented design is just one way of attacking messy problems.
+It's a way that many programmers find very helpful (and which others
+happen to find to be far more of a hassle than it's worth,
+incidentally), and it just happens to show up for you, the module user,
+as merely the style of interface.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file appg_07.htm
+# 1861 bytes of input
+#Sun Nov 11 18:10:04 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"

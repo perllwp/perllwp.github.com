@@ -1,0 +1,201 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 9.4. Example: BBC News
+
+In Chapter 7, "HTML Processing with Tokens", we considered the task of
+extracting the headline link URLs from the BBC News main page, and we
+implemented it in terms of HTML::TokeParser. Here, we'll consider the
+same problem from the perspective of HTML::TreeBuilder.
+
+To review the problem: when you look at the source of
+http://news.bbc.co.uk (http://news.bbc.co.uk), you discover that each
+headline link is wrapped in one of two kinds of code. There are a lot
+of headlines expressed with code like this:
+
+ <B CLASS="h3"><A href="/hi/english/business/newsid_1576000/1576290.stm">Bank
+ of England mulls rate cut</A></B><BR>
+   
+ <B CLASS="h3"><A href="/hi/english/uk_politics/newsid_1576000/1576541.stm">Euro
+ battle revived by Blair speech</A></B><BR>
+
+and some headlines expressed with code like this:
+
+ <A href="/hi/english/business/newsid_1576000/1576636.stm">
+   <B class="h2"> Swissair shares wiped out</B><BR>
+ </A>
+ 
+ <A href="/hi/english/world/middle_east/newsid_1576000/1576113.stm">
+   <B class="h1">Mid-East blow to US anti-terror drive</B><BR>
+ </A>
+
+(Note that in this second case, the C<B> element's class value can be
+C<h1> or C<h2>.)
+
+In both cases, we can find what we want by first looking for C<B>
+elements. We then look for the C<href> attribute either on the C<A>
+element that's a child of this C<B> element, or on the C<A> element
+that's this C<B> element's parent. Whether we look for a parent C<A>
+node or a child C<A> node depends on the class attribute of the C<B>
+element. To make sure we're on the right track, we can code up
+something to formalize our idea of what sorts of nodes we want, and
+call the C<dump> method on each of them.
+
+ use strict;
+ use HTML::TreeBuilder 3;
+ 
+ my $tree = HTML::TreeBuilder->new( );
+ $tree->parse_file('bbc.html') || die $!;  # the saved source from BBC News
+ scan_bbc_tree( $tree, 'http://news.bbc.co.uk/' );
+ $tree->delete( );
+ 
+ sub scan_bbc_tree {
+   my($root, $docbase) = @_;
+     # $docbase will be needed if we want to absolutize the URL
+   foreach my $b ($root->find_by_tag_name('b')) {
+     my $class = $b->attr('class') || next;
+     if($class eq 'h3') {
+       # expect one 'a' element as a child
+       print "Found a b-h3.  Dumping it:\n";
+       $b->dump;
+     } elsif($class eq 'h1' or $class eq 'h2') {
+       # expect the parent to be an 'a'
+       print "Found a b-h[1-2].  Dumping its parent:\n";
+       $b->parent->dump;
+     }
+   }
+   return;  
+ }
+
+When run on the full file, that program produces this output:
+
+ Found a b-h3.  Dumping it:
+ <b class="h3"> @0.1.2.2.0.0.3.2.0.3.0.0.0.0.6
+   <a href="/sport/hi/english/in_depth/2001/england_in_zimbabwe/newsid_1574000/
+ 1574824.stm"> @0.1.2.2.0.0.3.2.0.3.0.0.0.0.6.0
+     "Zimbabwe suffer treble blow"
+ 
+ Found a b-h3.  Dumping it:
+ <b class="h3"> @0.1.2.2.0.0.3.2.0.6.1.0
+   <a href="/hi/english/business/newsid_1576000/1576546.stm"> @0.1.2.2.0.0.3.2.0.6.1.0.0
+     "UK housing market stalls"
+ 
+ Found a b-h[1-2].  Dumping its parent:
+ <a href="/hi/english/uk_politics/newsid_1576000/1576051.stm"> @0.1.2.2.0.0.1.2.0.14.2
+   " "
+   <b class="h1"> @0.1.2.2.0.0.1.2.0.14.2.1
+     "UK hate crime laws to be tightened"
+   <br> @0.1.2.2.0.0.1.2.0.14.2.2
+ 
+ Found a b-h[1-2].  Dumping its parent:
+ <a href="/hi/english/uk/newsid_1576000/1576379.stm"> @0.1.2.2.0.0.1.2.0.18.2
+   " "
+   <b class="h2"> @0.1.2.2.0.0.1.2.0.18.2.1
+     "Leeds footballers' trial begins"
+   <br> @0.1.2.2.0.0.1.2.0.18.2.2
+ 
+ [...and others just like those...]
+
+This output shows all the sorts of nodes from which we'll want to
+extract data and contains no other kinds of nodes. With the situation
+we see in the first two cases, the C<b> element with the C<class="h3">
+attribute indeed has only one child node, which is an C<a> element
+whose C<href> we want, and in the latter two cases, we need only look
+to the C<href> attribute on the parent of the C<b> element (which has a
+C<class="h1"> or C<class="h2"> attribute). So because we're identifying
+things correctly, we can go ahead and change our code so that instead
+of dumping nodes, it will actually pull the C<href>s out, absolutize
+them, and print them:
+
+ use URI;
+ sub scan_bbc_tree {
+   my($root, $docbase) = @_;
+   foreach my $b ($root->find_by_tag_name('b')) {
+     my $class = $b->attr('class') || next;
+     if($class eq 'h3') {
+       # Expect one 'a' element as a child
+       my @children = $b->content_list;
+       if(@children == 1 and ref $children[0] and $children[0]->tag eq 'a') {
+         print URI->new_abs(
+           $children[0]->attr('href') || next,
+           $docbase
+         ), "\n";
+       }
+     } elsif($class eq 'h1' or $class eq 'h2') {
+       # Expect an 'a' element as a parent
+       my $parent = $b->parent;
+       if($parent and $parent->tag eq 'a') {
+         print URI->new_abs(
+           $parent->attr('href') || next,
+           $docbase
+         ), "\n";
+       }
+     }
+   }
+   return;  
+ }
+
+When run, this correctly reports all the URLs in the document:
+
+ http://news.bbc.co.uk/sport/hi/english/in_depth/2001/england_in_zimbabwe/newsid_
+ 1574000/1574824.stm
+ http://news.bbc.co.uk/hi/english/business/newsid_1576000/1576546.stm
+ http://news.bbc.co.uk/hi/english/uk_politics/newsid_1576000/1576051.stm
+ http://news.bbc.co.uk/hi/english/uk/newsid_1576000/1576379.stm
+ [...etc...]
+
+If we want to make our program also capture the text inside the link,
+that's straightforward too; we need only change each occurrence of:
+
+ print URI->new_abs(...
+
+to:
+
+ print $b->as_text( ), "\n  ", URI->new_abs(...
+
+Then you'll get output like this:
+
+ UK housing market stalls
+   http://news.bbc.co.uk/hi/english/business/newsid_1576000/1576546.stm
+ UK hate crime laws to be tightened
+   http://news.bbc.co.uk/hi/english/uk_politics/newsid_1576000/1576051.stm
+ Leeds footballers' trial begins
+   http://news.bbc.co.uk/hi/english/uk/newsid_1576000/1576379.stm
+  Swissair shares wiped out
+   http://news.bbc.co.uk/hi/english/business/newsid_1576000/1576636.stm
+ [...]
+
+Notice that in the fourth link there, we have a space at the start.
+Wanting to I<not> have whitespace at the start or end of C<as_text( )>
+is common enough that there's a method just for that:
+C<as_trimmed_text( )>, which wraps around C<as_text( )>, removes any
+whitespace at the start or end, and collapses any whitespace nodes on
+the inside.L<[3]|/FOOTNOTE-3> When we replace our calls to C<get_text(
+)> with calls to C<get_trimmed_text( )>, that last link changes to
+this:
+
+=over
+
+[3] This is exactly the same as the C<$stream-E<gt>get_text( )> versus
+C<$stream-E<gt>get_trimmed_text( )> distinction in HTML::TokeParser.
+
+=back
+
+ [...]
+ Swissair shares wiped out
+   http://news.bbc.co.uk/hi/english/business/newsid_1576000/1576636.stm
+ [...]
+
+that is, without the space at the start of the line.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch09_04.htm
+# 9006 bytes of input
+#Sun Nov 11 18:10:08 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch07_01.htm"

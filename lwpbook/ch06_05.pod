@@ -1,0 +1,165 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 6.5. Example: Extracting Links from a Bookmark File
+
+Suppose we want to delegate to a Perl program the task of checking URLs
+in my Netscape bookmark file. I'm told that this isn't the same format
+as is used in newer Netscapes. But, antiquarian that I am, I still use
+Netscape 4.76, and this is what the file looks like:
+
+ <!DOCTYPE NETSCAPE-Bookmark-file-1>
+ <!-- This is an automatically generated file.
+ It will be read and overwritten.
+ Do Not Edit! -->
+ <TITLE>Bookmarks for Sean M. Burke</TITLE>
+ <H1>Bookmarks for Sean M. Burke</H1>
+ 
+ <DL><p>
+   <DT><H3 ADD_DATE="911669103">Personal Toolbar Folder</H3>
+   <DL><p>
+     <DT><A HREF="http://libros.unm.edu/" ADD_DATE="908672224" ...
+     <DT><A HREF="http://www.melvyl.ucop.edu/" ADD_DATE="900184542" ...
+     <DT><A HREF="http://www.guardian.co.uk/" ADD_DATE="935897798" ...
+     <DT><A HREF="http://www.booktv.org/schedule/" ADD_DATE="935897798" ...
+     <DT><A HREF="http://www.suck.com/" ADD_DATE="942604862" ...
+     ...and so on...
+
+There are three important things we should note here:
+
+=over
+
+=item *
+
+Each bookmark item is on a line of its own. This means we can use the
+handy Perl idioms for line-at-a-time processing such as
+C<while(E<lt>INE<gt>)> C<{...}> or C<@lines> C<=> C<E<lt>INE<gt>>.
+
+=item *
+
+Every URL is absolute. There are no relative URLs such as
+C<HREF="../stuff.html">. That means we don't have to bother with making
+URLs absolute (not yet, at least).
+
+=item *
+
+The only thing we want from this file is the URL in the
+C<HREF="...>I<C<url>>C<..."> part of the lineE<mdash>and if there is no
+C<HREF> on the line, we can ignore this line. This practically begs us
+to use a Perl regexp!
+
+=back
+
+So we scan the file one line at a time, find URLs in lines that have a
+C<HREF="...>I<C<url>>C<..."> in them, then check those URLs. Example
+6-4 shows such a program.
+
+=head2 Example 6-4. bookmark-checker
+
+ #!/usr/bin/perl -w
+ # bookmark-checker - check URLs in Netscape bookmark file
+ 
+ use strict;
+ use LWP;
+ my $browser;
+ my $bmk_file = $ARGV[0]
+   || 'c:/Program Files/Netscape/users/sburke/bookmark.htm';
+ open(BMK, "<$bmk_file") or die "Can't read-open $bmk_file: $!";
+ 
+ while (<BMK>) {
+   check_url($1) if m/ HREF="([^"\s]+)" /;
+ }
+ 
+ print "# Done after ", time - $^T, "s\n";
+ exit;
+ 
+ my %seen;  # for tracking which URLs we've already checked
+ 
+ sub check_url {
+   # Try to fetch the page and report failure if it can't be found
+   # This routine even specially reports if the URL has changed
+   # to be on a different host.
+ 
+   my $url = URI->new( $_[0] )->canonical;
+ 
+   # Skip mailto: links, and in fact anything not http:...
+   return unless $url->scheme( ) eq 'http';
+ 
+   # Kill anything like '#staff' in 'http://luddites.int/them.txt#staff'
+   $url->fragment(undef);
+ 
+   # Kill anything like the currently quite useless but
+   # occasionally occurring 'jschmo@' in
+   #  'http://jschmo@luddites.int/them.txt'
+   # (It's useless because it doesn't actually show up
+   # in the request to the server in any way.)
+   $url->userinfo(undef);
+  
+   return if $seen{$url};  # silently skip duplicates
+   $seen{$url} = 1;  
+ 
+   init_browser( ) unless $browser;
+   my $response = $browser->head($url);
+   my $found = URI->new( $response->request->url )->canonical;
+   $seen{$found} = 1; # so we don't check it later.
+ 
+   # If the server complains that it doesn't understand "HEAD",
+   #  (405 is "Method Not Allowed"), then retry it with "GET":
+   $response = $browser->get($found) if $response->code == 405;
+ 
+   if($found ne $url) {
+     if($response->is_success) {
+       # Report the move, only if it's a very different URL.
+       # That is, different schemes, or different hosts.
+       if(
+         $found->scheme ne $url->scheme
+        or
+         lc( $found->can('host') ? $found->host : '' )
+          ne
+         lc(   $url->can('host') ?   $url->host : '' )
+       ) {
+         print "MOVED: $url\n    -> $found\n",
+       }
+ 
+     } else {
+       print "MOVED: $url\n    -> $found\n",
+         "       but that new URL is bad: ",
+         $response->status_line( ), "\n"
+     }
+   } elsif($response->is_success) {
+     print "## okay: $url\n";
+   } else {
+     print "$url is bad! ", $response->status_line, "\n";
+   }
+   return;
+ }
+ 
+ sub init_browser {
+   $browser = LWP::UserAgent->new;
+ 
+   # Speak only HTTP - no mailto or FTP or anything.
+   $browser->protocols_allowed( [ 'http' ] );
+ 
+   # And any other initialization we might need to do.
+ 
+   return $browser;
+ }
+
+And for this rigidly formatted input file, our line-at-a-time
+regexp-based approach works just fine; our simple loop:
+
+ while (<BMK>) { check_url($1) if m/ HREF="([^"\s]+)" / }
+
+really does catch every URL in my Netscape bookmark file.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch06_05.htm
+# 6236 bytes of input
+#Sun Nov 11 18:10:07 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch06_05.htm#perllwp-CHP-6-EX-4"

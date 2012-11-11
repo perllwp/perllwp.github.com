@@ -1,0 +1,57 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 12.4. Ideas for Further Expansion
+
+In its current form, this bot is a passable implementation framework
+for a Type Three Requester spider that checks links on typical HTML web
+sites. In actual use, you would want to fine tune its heuristics. For
+example, if you want to check the validity of lots of URLs to sites
+that don't implement HEAD, you'd want to improve on the logic that
+currently just considers those URLs a lost cause; or you might want to
+add code that will skip any attempt at HEADing a URL on a host that has
+previously responded to any HEAD request with a "Method Not Supported"
+error, or has otherwise proven uncooperative.
+
+If you wanted the spider to check large numbers of URLs, or spider a
+large site, it might be prudent to have some of its state saved to disk
+(specifically C<@schedule>, C<%seen_url_before>, C<%points_to>, and
+C<%notable_url_error>); that way you could stop the spider, start it
+later, and have it resume where it left off, to avoid wastefully
+duplicating what it did the last time. It would also be wise to have
+the spider enforce some basic constraints on documents and requests,
+such as aborting any HTML transfer that exceeds 200K or that seems to
+not actually be HTML, or by having the spider put a maximum limit on
+the number of times it will hit any given host (see the C<no_visits( )>
+method mentioned in the LWP::RobotUA documentation, and specifically
+consider C<$bot-E<gt>no_visits($url-E<gt>host_port)>).
+
+Moreover, the spider's basic behavior could be altered easily by
+changing just a few of the routines. For example, to turn it into a
+robot that merely checks URLs that you give it on the command line, you
+need only redefine one routine like this:
+
+ sub near_url { 0; }   # no URLs are "near", i.e., spiderable
+
+Conversely, to turn it into a pure Type Four Requester spider that
+recursively looks for links to which any web pages it finds link, all
+it takes is this:
+
+ sub near_url { 1; }   # all URLs are "near", i.e., spiderable
+
+But as pointed out earlier in this chapter, that is a risky endeavor.
+It requires careful monitoring and log analysis, constant adjustments
+to its response-processing heuristics, intelligent caching, and other
+matters regrettably beyond what can be sufficiently covered in this
+book.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch12_04.htm
+# 3213 bytes of input
+#Sun Nov 11 18:10:09 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"

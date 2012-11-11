@@ -1,0 +1,80 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 0.4. Important Standards Documents
+
+The basic protocols and data formats of the Web are specified in a
+number of Internet RFCs. The most important are:
+
+=over
+
+=item I<RFC 2616: HTTP 1.1>
+
+http://tools.ietf.org/html/2616 (http://tools.ietf.org/html/2616)
+
+=item I<RFC 2965: HTTP Cookies Specification>
+
+http://tools.ietf.org/html/2965 (http://tools.ietf.org/html/2965)
+
+=item I<RFC 2617: HTTP Authentication: Basic and Digest Access
+Authentication>
+
+http://tools.ietf.org/html/2617 (http://tools.ietf.org/html/2617)
+
+=item I<RFC 2396: Uniform Resource Identifiers: Generic Syntax>
+
+http://tools.ietf.org/html/2396 (http://tools.ietf.org/html/2396)
+
+=item I<HTML 4.01 specification>
+
+http://www.w3.org/TR/html401/ (http://www.w3.org/TR/html401/)
+
+=item I<HTML 4.01 Forms specification>
+
+http://www.w3.org/TR/html401/interact/forms
+(http://www.w3.org/TR/html401/interact/forms)
+
+=item I<Character sets>
+
+http://www.iana.org/assignments/character-sets
+(http://www.iana.org/assignments/character-sets)
+
+=item I<Country codes>
+
+http://www.iana.org/root-whois/ (http://www.iana.org/root-whois/)
+
+=item I<Non-country top-level domains (.com, .int, etc)>
+
+http://www.iana.org/gtld/gtld.htm (http://www.iana.org/gtld/gtld.htm)
+
+=item I<Unicode specifications>
+
+http://www.unicode.org (http://www.unicode.org)
+
+=item I<RFC 2279: Encoding Unicode as UTF-8>
+
+http://tools.ietf.org/html/2279 (http://tools.ietf.org/html/2279)
+
+=item I<Request For Comments documents>
+
+http://www.rfc-editor.org (http://www.rfc-editor.org)
+
+=item I<IANA protocol assignments>
+
+http://www.iana.org/assignments/port-numbers
+(http://www.iana.org/assignments/port-numbers)
+
+http://www.iana.org/numbers.html (http://www.iana.org/numbers.html)
+
+=back
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch00_04.htm
+# 2856 bytes of input
+#Sun Nov 11 18:10:04 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"

@@ -1,0 +1,165 @@
+=pod
+
+^ Perl and LWP ^
+
+Symbols & Numbers | A | B | C | D | E | F | G | H | I | J | K | L | M |
+N | O | P | Q | R | S | T | U | V | W | X | Y | Z
+
+=head1 Index: I
+
+=over
+
+=item if statements, loops: 7.3. Individual Tokens
+
+=item image tags, checking: 7.3.1. Checking Image Tags
+
+=item images
+
+=over
+
+=item deleting: 10.2. Deleting Images
+
+=item inline images: 5.4.7. Image Buttons
+
+=item tokenizing and: 8.6.2. Images and Applets
+
+=back
+
+=item individual tokens: 7.3. Individual Tokens
+
+=item inline images: 5.4.7. Image Buttons
+
+=item input elements, HTML forms
+
+=over
+
+=item type=checkbox: 5.4.4. Checkboxes
+
+=item type=file: 5.4.9. File Selection Elements
+
+=over
+
+=item 5.7. File Uploads
+
+=back
+
+=item type=hidden: 5.4.1. Hidden Elements
+
+=item type=image: 5.4.7. Image Buttons
+
+=item type=password: 5.4.3. Password Elements
+
+=item type=radio: 5.4.5. Radio Buttons
+
+=item type=reset: 5.4.8. Reset Buttons
+
+=item type=submit: 5.4.6. Submit Buttons
+
+=item type=text: 5.4.2. Text Elements
+
+=back
+
+=item E<lt>inputE<gt> HTML tag: 5.1. Elements of an HTML Form
+
+=item installation, LWP: 1.3. Installing LWP
+
+=over
+
+=item CPAN shell: 1.3.1. Installing LWP from the CPAN Shell
+
+=item manual: 1.3.2. Installing LWP Manually
+
+=back
+
+=item interfaces, object-oriented: 1.5.1. The Object-Oriented Interface
+
+=back
+
+Symbols & Numbers | A | B | C | D | E | F | G | H | I | J | K | L | M |
+N | O | P | Q | R | S | T | U | V | W | X | Y | Z
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file idx_i.htm
+# 5568 bytes of input
+#Sun Nov 11 18:19:47 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "../index.html"
+# Untranslatable link: "idx_0.htm"
+# Untranslatable link: "idx_a.htm"
+# Untranslatable link: "idx_b.htm"
+# Untranslatable link: "idx_c.htm"
+# Untranslatable link: "idx_d.htm"
+# Untranslatable link: "idx_e.htm"
+# Untranslatable link: "idx_f.htm"
+# Untranslatable link: "idx_g.htm"
+# Untranslatable link: "idx_h.htm"
+# Untranslatable link: "idx_i.htm"
+# Untranslatable link: "idx_j.htm"
+# Untranslatable link: "idx_k.htm"
+# Untranslatable link: "idx_l.htm"
+# Untranslatable link: "idx_m.htm"
+# Untranslatable link: "idx_n.htm"
+# Untranslatable link: "idx_o.htm"
+# Untranslatable link: "idx_p.htm"
+# Untranslatable link: "idx_q.htm"
+# Untranslatable link: "idx_r.htm"
+# Untranslatable link: "idx_s.htm"
+# Untranslatable link: "idx_t.htm"
+# Untranslatable link: "idx_u.htm"
+# Untranslatable link: "idx_v.htm"
+# Untranslatable link: "idx_w.htm"
+# Untranslatable link: "idx_x.htm"
+# Untranslatable link: "idx_y.htm"
+# Untranslatable link: "idx_z.htm"
+# Untranslatable link: "../ch07_03.htm#INDEX-431"
+# Untranslatable link: "../ch07_03.htm#INDEX-432"
+# Untranslatable link: "../ch10_02.htm#INDEX-574"
+# Untranslatable link: "../ch05_04.htm#INDEX-319"
+# Untranslatable link: "../ch08_06.htm#INDEX-488"
+# Untranslatable link: "../ch07_03.htm#INDEX-429"
+# Untranslatable link: "../ch05_04.htm#INDEX-318"
+# Untranslatable link: "../ch05_04.htm#INDEX-306"
+# Untranslatable link: "../ch05_04.htm#INDEX-325"
+# Untranslatable link: "../ch05_07.htm#INDEX-348"
+# Untranslatable link: "../ch05_04.htm#INDEX-299"
+# Untranslatable link: "../ch05_04.htm#INDEX-317"
+# Untranslatable link: "../ch05_04.htm#INDEX-303"
+# Untranslatable link: "../ch05_04.htm#INDEX-309"
+# Untranslatable link: "../ch05_04.htm#INDEX-321"
+# Untranslatable link: "../ch05_04.htm#INDEX-313"
+# Untranslatable link: "../ch05_04.htm#INDEX-301"
+# Untranslatable link: "../ch05_01.htm#INDEX-277"
+# Untranslatable link: "../ch01_03.htm#INDEX-23"
+# Untranslatable link: "../ch01_03.htm#INDEX-28"
+# Untranslatable link: "../ch01_03.htm#INDEX-30"
+# Untranslatable link: "../ch01_05.htm#INDEX-45"
+# Untranslatable link: "idx_0.htm"
+# Untranslatable link: "idx_a.htm"
+# Untranslatable link: "idx_b.htm"
+# Untranslatable link: "idx_c.htm"
+# Untranslatable link: "idx_d.htm"
+# Untranslatable link: "idx_e.htm"
+# Untranslatable link: "idx_f.htm"
+# Untranslatable link: "idx_g.htm"
+# Untranslatable link: "idx_h.htm"
+# Untranslatable link: "idx_i.htm"
+# Untranslatable link: "idx_j.htm"
+# Untranslatable link: "idx_k.htm"
+# Untranslatable link: "idx_l.htm"
+# Untranslatable link: "idx_m.htm"
+# Untranslatable link: "idx_n.htm"
+# Untranslatable link: "idx_o.htm"
+# Untranslatable link: "idx_p.htm"
+# Untranslatable link: "idx_q.htm"
+# Untranslatable link: "idx_r.htm"
+# Untranslatable link: "idx_s.htm"
+# Untranslatable link: "idx_t.htm"
+# Untranslatable link: "idx_u.htm"
+# Untranslatable link: "idx_v.htm"
+# Untranslatable link: "idx_w.htm"
+# Untranslatable link: "idx_x.htm"
+# Untranslatable link: "idx_y.htm"
+# Untranslatable link: "idx_z.htm"

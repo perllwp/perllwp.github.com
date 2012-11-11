@@ -1,0 +1,251 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 6.2. Regular Expression Techniques
+
+Web pages are designed to be easy for humans to read, not for programs.
+Humans are very flexible in what they can read, and they can easily
+adapt to a new look and feel of the web page. But if the underlying
+HTML changes, a program written to extract information from the page
+will no longer work. Your challenge when writing a data-extraction
+program is to get a feel for the amount of natural variation between
+pages you'll want to download.
+
+The following are a set of techniques for you to use when creating
+regular expressions to extract data from web pages. If you're an
+experienced Perl programmer, you probably know most or all of them and
+can skip ahead to Section 6.3, "Troubleshooting".
+
+=head2 6.2.1. Anchor Your Match
+
+An important decision is how much surrounding text you put into your
+regular expression. Put in too much of this context and you run the
+risk of being too specificE<mdash>the natural variation from page to
+page causes your program to fail to extract some information it should
+have been able to get. Similarly, put in too little context and you run
+the risk of your regular expression erroneously matching elsewhere on
+the page.
+
+=head2 6.2.2. Whitespace
+
+Many HTML pages have whitespace added to make the source easier to read
+or as a side effect of how they were produced. For example, notice the
+spaces around the number in this line:
+
+ <b>Amazon.com Sales Rank: </b> 4,070 </font><br>
+
+Without checking, it's hard to guess whether every page has that space.
+You could check, or you could simply be flexible in what you accept:
+
+ $html =~ m{Amazon\.com Sales Rank: </b>\s*([\d,]+)\s*</font><br>} || die;
+
+Now we can match the number regardless of the amount of whitespace
+around it. The C<\s> wildcard matches any whitespace character.
+
+=head2 6.2.3. Embedded Newlines
+
+Beware of using C<\s> when you are matching across multiple lines,
+because C<\s> matches newlines. You can construct a character class to
+represent "any whitespace but newlines":
+
+ [^\S\n]
+
+As a further caveat, the regexp dot "." normally matches any character
+I<except> a newline. To make the dot match newlines as well, use the
+C</s> option. Now you can say C<m{E<lt>bE<gt>.*?E<lt>/bE<gt>}s> and
+find the bold text even if it includes newlines. But this C</s> option
+doesn't change the meaning of C<^> and C<$> from their usual "start of
+string" and "end of string, or right before the newline at the end of
+the string if present." To change that, use the C</m> option, which
+makes C<^> and C<$> match the beginning and end of lines within the
+string. That is, with C</m>, a C<^> matches the start of the string or
+right after any newline in the string; and a C<$> then matches the end
+of the string, or right before any newline in the string.
+
+For example, to match the ISBN that starts out a line while ignoring
+any other occurrences of "ISBN" in the page, you might say:
+
+ m{^ISBN: ([-0-9A-Za-z]+)}m
+
+Incidentally, you might expect that because an ISBN is called a number,
+we'd use C<\d+> to match it. However, ISBNs occasionally have letters
+in them and are sometimes shown with dashes; hence the C<[-0-9A-Za-z]>
+range instead of the overly restrictive C<\d+> range, which would fail
+to match an ISBN such as 038079439X or 0-8248-1898-9.
+
+=head2 6.2.4. Minimal and Greedy Matches
+
+If you want to extract everything between two tags, there are two
+approaches:
+
+ m{<b>(.*?)</b>}i
+ m{<b>([^<]*)</b>}i
+
+The former uses minimal matching to match as little as possible between
+the C<E<lt>bE<gt>> and the C<E<lt>/bE<gt>>. The latter uses greedy
+matching to match as much text that doesn't contain a greater-than sign
+as possible between C<E<lt>bE<gt>> and C<E<lt>/bE<gt>>. The latter is
+marginally faster but won't successfully match text such as
+C<E<lt>bE<gt>E<lt>iE<gt>hiE<lt>/iE<gt>E<lt>/bE<gt>>, whereas the former
+will.
+
+=head2 6.2.5. Capture
+
+To extract information from a regular expression match, surround part
+of the regular expression in parentheses. This causes the regular
+expression engine to set the C<$1>, C<$2>, etc. variables to contain
+the portions of the string that match those parts of the pattern. For
+example:
+
+ $string = '<a href="there.html">go here now!</a>';
+ $string =~ m{ href="(.*?)"}i;       # extract destination of link
+ $url = $1;
+
+A match in scalar context returns true or false depending on whether
+the regular expression matched the string. A match in list context
+returns a list of C<$1>, C<$2>, ... captured text.
+
+ $matched = $string =~ m{RE};
+ @matches = $string =~ m{RE};
+
+To group parts of a regular expression together without capturing, use
+the C<(?>:I<C<RE>>C<)> construct:
+
+ $string = '<a href="jumbo.html"><img src="big.gif"></a>';
+ @links = $string =~ m{(?:href|src)="(.*?)"}g;
+ print "Found @links\n";
+ Found jumbo.html big.gif
+
+=head2 6.2.6. Repeated Matches
+
+The C</g> modifier causes the match to be repeated. In scalar context,
+the match continues from where the last match left off. Use this to
+extract information I<one> match at a time. For example:
+
+ $string = '<img src="big.gif"><img src="small.gif">';
+ while ($string =~ m{src="(.*?)"}g) {
+   print "Found: $1\n";
+ }
+ Found: big.gif
+ Found: small.gif
+
+In list context, C</g> causes I<all> matching captured strings to be
+returned. Use this to extract all matches at once. For example:
+
+ $string = '<img src="big.gif"><img src="small.gif">';
+ @pix = $string =~ m{src="(.*?)"}g;
+ print "Found @pix\n";
+ Found big.gif small.gif
+
+If your regular expression doesn't use capturing parentheses, the
+entire text that matches is returned:
+
+ $string = '<img src="big.gif"><img src="small.gif">';
+ @gifs = $string =~ m{\w+\.gif}g;
+ print "Found @gifs\n";
+ Found big.gif small.gif
+
+=head2 6.2.7. Develop from Components
+
+There are many reasons to break regular expressions into
+componentsE<mdash>it makes them easier to develop, debug, and maintain.
+Use the C<qr//> operator to compile a chunk of a regular expression,
+then interpolate it into a larger regular expression without
+sacrificing performance:
+
+ $string = '<a href="jumbo.html"><img src="big.gif"></a>';
+ $ATTRIBUTE = qr/href|src/;
+ $INSIDE_QUOTES = qr/.*?/;
+ @files = $string =~ m{(?:$ATTRIBUTE)="($INSIDE_QUOTES)"}g;
+ print "Found @files\n";
+ Found jumbo.html big.gif
+
+=head2 6.2.8. Use Multiple Steps
+
+A common conceit in programmers is to try to do everything with one
+regular expression. Don't be afraid to use two or more. This has the
+same advantages as building your regular expression from components: by
+only attempting to solve one part of the problem at each step, the
+final solution can be easier to read, debug, and maintain.
+
+For example, the front page of http://www.oreillynet.com/
+(http://www.oreillynet.com/) has several articles on it. Inspecting the
+HTML with View Source on the browser shows that each story looks like
+this:
+
+ <!-- itemtemplate -->
+ <p class="medlist"><b><a href="http://www.oreillynet.com/pub/a/dotnet/2002/03/04
+ /rotor.html">Uncovering Rotor -- A Shared Source CLI</a></b>&nbsp;^M
+  Recently, David Stutz and Stephen Walli hosted an informal, unannounced BOF at 
+ BSDCon 2002 about Microsoft's Shared Source implementation of the ECMA CLI, also 
+ known as Rotor. Although the source code for the Shared Source CLI wasn't yet 
+ available, the BOF offered a preview of what's to come, as well as details about its 
+ implementation and the motivation behind it. &nbsp;[<a href="http://www.oreillynet.
+ com/dotnet/">.NET DevCenter</a>]</p>
+
+That is, the article starts with the C<itemtemplate> comment and ends
+with the C<E<lt>/pE<gt>> tag. This suggests a main loop of:
+
+ while ($html =~ m{<!-- itemtemplate -->(.*?)</p>}gs) {
+   $chunk = $1;
+   # extract URL, title, and summary from $chunk
+ }
+
+It's surprisingly common to see HTML comments indicating the structure
+of the HTML. Most dynamic web sites are generated from templates, the
+comments help the people who maintain the templates keep track of the
+various sections.
+
+Extracting the URL, title, and summary is straightforward. It's even a
+simple matter to use the standard Text::Wrap module to reformat the
+summary to make it easy to read:
+
+ use Text::Wrap;
+ 
+ while ($html =~ m{<!-- itemtemplate -->(.*?)</p>}gs) {
+   $chunk = $1;
+   ($URL, $title, $summary) =
+      $chunk =~ m{href="(.*?)">(.*?)</a></b>\s*&nbsp;\s*(.*?)\[}i
+      or next;
+   $summary =~ s{&nbsp;}{ }g;
+   print "$URL\n$title\n", wrap("  ", "  ", $summary), "\n\n";
+ }
+
+Running this, however, shows HTML still in the summary. Remove the tags
+with:
+
+ $summary =~ s{<.*?>}{}sg;
+
+The complete program is shown in Example 6-3.
+
+=head2 Example 6-3. orn-summary
+
+ #!/usr/bin/perl -w
+ 
+ use LWP::Simple;
+ use Text::Wrap;
+ 
+ $html = get("http://www.oreillynet.com/") || die;
+ 
+ while ($html =~ m{<!-- itemtemplate -->(.*?)</p>}gs) {
+   $chunk = $1;
+   ($URL, $title, $summary) =
+      $chunk =~ m{href="(.*?)">(.*?)</a></b>\s*&nbsp;\s*(.*?)\[}i
+      or next;
+   $summary =~ s{&nbsp;}{ }g;
+   $summary =~ s{<.*?>}{}sg;
+   print "$URL\n$title\n", wrap("  ", "  ", $summary), "\n\n";
+ }
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file ch06_02.htm
+# 13579 bytes of input
+#Sun Nov 11 18:10:07 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "ch06_03.htm#perllwp-CHP-6-SECT-3"
+# Untranslatable link: "ch06_02.htm#perllwp-CHP-6-EX-3"

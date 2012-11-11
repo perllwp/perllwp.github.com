@@ -1,0 +1,65 @@
+=pod
+
+^ Perl and LWP ^
+
+=head1 Appendix G. User's View of Object-Oriented Modules
+
+=head2 Contents:
+
+L<A User's View of Object-Oriented Modules|/perllwp-APP-G-SECT-1>
+
+Modules and Their Functional Interfaces
+
+Modules with Object-Oriented Interfaces
+
+What Can You Do with Objects?
+
+What's in an Object?
+
+What Is an Object Value?
+
+So Why Do Some Modules Use Objects?
+
+The Gory Details
+
+The following article by Sean M. Burke first appeared in I<The Perl
+Journal> #17 and is copyright 2000, I<The Perl Journal>. It appears
+courtesy of Jon Orwant and I<The Perl Journal>. This document may be
+distributed under the same terms as Perl itself.
+
+=head2 G.1. A User's View of Object-Oriented Modules
+
+The first time that most Perl programmers run into object-oriented
+programming is when they need to use a module whose interface is
+object-oriented. This is often a mystifying experience, since talk of
+"methods" and "constructors" is unintelligible to programmers who
+thought that functions and variables was all there was to worry about.
+
+Articles and books that explain object-oriented programming (OOP), do
+so in terms of how to program that way. That's understandable, and if
+you learn to write object-oriented code of your own, you'd find it easy
+to use object-oriented code that others write. But this approach is the
+I<long> way around for people whose immediate goal is just to use
+existing object-oriented modules, but who don't yet want to know all
+the gory details of having to write such modules for themselves.
+
+This article is for those programmersE<mdash>programmers who want to
+know about objects from the perspective of using object-oriented
+modules.
+
+=cut
+
+#Pod::HTML2Pod conversion notes:
+#From file appg_01.htm
+# 2847 bytes of input
+#Sun Nov 11 18:10:04 2012 root
+# No a_name switch not specified, so will not try to render <a name='...'>
+# Will try to render <a href='...'>
+# Untranslatable link: "./index.html"
+# Untranslatable link: "appg_02.htm"
+# Untranslatable link: "appg_03.htm"
+# Untranslatable link: "appg_04.htm"
+# Untranslatable link: "appg_05.htm"
+# Untranslatable link: "appg_06.htm"
+# Untranslatable link: "appg_07.htm"
+# Untranslatable link: "appg_08.htm"
